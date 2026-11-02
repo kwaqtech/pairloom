@@ -1,0 +1,301 @@
+/* ============================================================
+   POLAROID GALLERY COMPONENT
+   ============================================================ */
+
+#gallery {
+  background: transparent;
+}
+
+.gallery-header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+/* ── POLAROID GRID ── */
+.polaroid-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-8);
+  padding: var(--space-6) 0;
+}
+
+/* ── POLAROID CARD ── */
+.polaroid {
+  display: flex;
+  flex-direction: column;
+  background: #FDFCFA;
+  padding: var(--space-3) var(--space-3) var(--space-5);
+  border-radius: 4px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 4px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition:
+    transform var(--duration-slow) var(--ease-spring),
+    box-shadow var(--duration-slow) var(--ease-out);
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Slight random tilt */
+.polaroid:nth-child(1) {
+  transform: rotate(-1.8deg);
+}
+
+.polaroid:nth-child(2) {
+  transform: rotate(1.2deg);
+}
+
+.polaroid:nth-child(3) {
+  transform: rotate(-0.8deg);
+}
+
+.polaroid:nth-child(4) {
+  transform: rotate(2.1deg);
+}
+
+.polaroid:nth-child(5) {
+  transform: rotate(-1.5deg);
+}
+
+.polaroid:nth-child(6) {
+  transform: rotate(0.9deg);
+}
+
+.polaroid:nth-child(7) {
+  transform: rotate(-2.0deg);
+}
+
+.polaroid:nth-child(8) {
+  transform: rotate(1.7deg);
+}
+
+.polaroid:nth-child(9) {
+  transform: rotate(-1.1deg);
+}
+
+.polaroid:nth-child(10) {
+  transform: rotate(2.3deg);
+}
+
+.polaroid:nth-child(11) {
+  transform: rotate(-0.6deg);
+}
+
+.polaroid:nth-child(12) {
+  transform: rotate(1.4deg);
+}
+
+.polaroid:hover {
+  transform: rotate(0deg) translateY(-8px) scale(1.04);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.10),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+/* Photo area */
+.polaroid-photo {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--sky-100), var(--rose-100));
+  position: relative;
+}
+
+.polaroid-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.polaroid:hover .polaroid-photo img {
+  transform: scale(1.05);
+}
+
+/* Placeholder when no image */
+.polaroid-photo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+/* Film grain overlay */
+.polaroid-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+/* Caption area */
+.polaroid-caption {
+  padding-top: var(--space-3);
+  text-align: center;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.polaroid-caption-text {
+  font-family: 'Be Vietnam Pro', cursive;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--ink-500);
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+/* Upload add button */
+.polaroid-add {
+  border: 2px dashed var(--color-border-default);
+  background: rgba(255, 255, 255, 0.4) !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  aspect-ratio: 1.1;
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+  transform: none !important;
+  border-radius: 4px;
+}
+
+.polaroid-add:hover {
+  border-color: var(--rose-300);
+  background: var(--rose-50) !important;
+  transform: scale(1.02) !important;
+}
+
+.polaroid-add-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--rose-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rose-400);
+}
+
+.polaroid-add-text {
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+  text-align: center;
+}
+
+/* ── LIGHTBOX ── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-slow) var(--ease-smooth);
+}
+
+.lightbox.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 39, 52, 0.75);
+  backdrop-filter: blur(8px);
+}
+
+.lightbox-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: 80vmin;
+  transform: scale(0.92);
+  transition: transform var(--duration-slow) var(--ease-spring);
+}
+
+.lightbox.open .lightbox-content {
+  transform: scale(1);
+}
+
+.lightbox-photo {
+  background: #FDFCFA;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  border-radius: 4px;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);
+}
+
+.lightbox-photo img {
+  max-width: 70vmin;
+  max-height: 60vmin;
+  object-fit: contain;
+  display: block;
+}
+
+.lightbox-caption-lb {
+  font-family: 'Be Vietnam Pro', cursive;
+  font-size: var(--text-base);
+  font-style: italic;
+  color: white;
+  text-align: center;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close {
+  position: fixed;
+  top: var(--space-6);
+  right: var(--space-6);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 3;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── MOBILE GALLERY ── */
+@media (max-width: 768px) {
+  .polaroid-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+@media (max-width: 480px) {
+  .polaroid-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+}

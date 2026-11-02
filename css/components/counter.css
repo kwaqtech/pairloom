@@ -1,0 +1,391 @@
+/* ============================================================
+   COUNTER COMPONENT — Love Time Counter
+   ============================================================ */
+
+/* ── HERO SECTION ── */
+#hero {
+  padding-top: calc(var(--space-5) + 32px);
+  padding-bottom: var(--space-5);
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-10);
+  align-items: stretch;
+}
+
+/* ── COUNTER PANEL (LEFT) ── */
+.counter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  height: 100%;
+}
+
+.counter-card {
+  padding: var(--space-10);
+  border-radius: var(--radius-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.counter-card::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(244, 143, 177, 0.18) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.counter-names {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.counter-name-tag {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-subtle);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.counter-name-tag .avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sky-300), var(--rose-300));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.counter-sep-heart {
+  color: var(--color-brand);
+  animation: heartBeat 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+}
+
+/* DAYS BIG NUMBER */
+.days-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.days-number {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 10vw, 7rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--sky-500) 0%, var(--rose-400) 60%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-variant-numeric: tabular-nums;
+  transition: all var(--duration-base) var(--ease-smooth);
+}
+
+.days-label {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  letter-spacing: -0.01em;
+  padding-bottom: 12px;
+}
+
+.counter-summary {
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+}
+
+.counter-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-6);
+}
+
+.special-days {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.special-days-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+}
+
+.special-days-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.special-day-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.45);
+  font-size: var(--text-sm);
+}
+
+.special-day-item.next {
+  background: var(--rose-50);
+  border: 1px solid var(--rose-200);
+}
+
+.special-day-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.special-day-meta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* TIME MATRIX */
+.time-matrix {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-2);
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.time-value {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.time-label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* MILESTONE BADGES — yearly + monthly anniversary countdowns */
+.milestone-stack {
+  display: grid;
+  gap: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(150deg, var(--rose-50), var(--color-surface-card) 62%);
+  border: 1px solid var(--rose-200);
+  overflow: hidden;
+}
+
+/* one card, two rows — divider instead of two shadowed boxes */
+.milestone-stack .milestone-badge {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  animation: none;
+}
+
+.milestone-stack .milestone-badge+.milestone-badge {
+  border-top: 1px solid var(--rose-100);
+  background: linear-gradient(150deg, transparent, var(--sky-50) 140%);
+}
+
+.milestone-stack .milestone-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm, 10px);
+  background: white;
+  box-shadow: inset 0 0 0 1px var(--rose-100);
+}
+
+.milestone-badge--month .milestone-icon {
+  box-shadow: inset 0 0 0 1px var(--sky-100);
+}
+
+.milestone-stack .milestone-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rose-500);
+  margin-bottom: 2px;
+}
+
+.milestone-badge--month .milestone-label {
+  color: var(--sky-600);
+}
+
+.milestone-countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.milestone-days {
+  font-family: var(--font-mono);
+  font-size: clamp(26px, 5vw, 34px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.milestone-badge--month .milestone-days {
+  font-size: clamp(22px, 4vw, 28px);
+  color: var(--ink-700);
+}
+
+.milestone-days-unit {
+  font-size: var(--text-xs);
+  color: var(--ink-700);
+  opacity: 0.75;
+}
+
+.milestone-date {
+  font-size: var(--text-xs);
+  color: var(--ink-700);
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.milestone-stack .milestone-progress {
+  margin-top: var(--space-3);
+}
+
+.milestone-stack .milestone-progress-bar {
+  height: 4px;
+  background: var(--rose-100);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.milestone-badge--month .milestone-progress-bar {
+  background: var(--sky-100);
+}
+
+.milestone-stack .milestone-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--rose-300), var(--rose-500));
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.milestone-badge--month .milestone-progress-fill {
+  background: linear-gradient(90deg, var(--sky-300), var(--sky-500));
+}
+
+/* ── MOBILE ── */
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  #hero {
+    padding-top: calc(var(--space-12) + 64px);
+    min-height: auto;
+    padding-bottom: var(--space-12);
+  }
+
+  .counter-card {
+    padding: var(--space-6);
+  }
+
+  .time-matrix {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
+  }
+
+  .time-value {
+    font-size: var(--text-2xl);
+  }
+
+  .milestone-stack .milestone-badge {
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .milestone-stack .milestone-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .time-matrix {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .counter-names {
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi" class="fonts-pending">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#E1F0FA">
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='19' font-size='19'%3E%F0%9F%92%96%3C/text%3E%3C/svg%3E">
+
+  <!-- SEO -->
+  <title>Chúng Mình — Hành Trình Tình Yêu</title>
+  <meta name="description"
+    content="Trang web đếm ngày yêu và lưu giữ kỷ niệm của chúng mình — mỗi giây trôi qua đều đáng trân trọng.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Chúng Mình — Hành Trình Tình Yêu">
+  <meta property="og:description" content="Trang web kỷ niệm tình yêu của hai chúng mình">
+  <meta property="og:type" content="website">
+
+  <!-- Preconnect for fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components/counter.css">
+  <link rel="stylesheet" href="css/components/vinyl.css">
+  <link rel="stylesheet" href="css/components/timeline.css">
+  <link rel="stylesheet" href="css/components/gallery.css">
+  <link rel="stylesheet" href="css/components/settings.css">
+
+  <!-- Inline critical CSS: prevents CLS before stylesheets load -->
+  <style>
+    body {
+      background: #1e4d7a;
+    }
+
+    #welcome-screen {
+      background: linear-gradient(160deg, #184068 0%, #2d5f92 50%, #4a7fa8 100%);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════════════
+     BACKGROUND LAYERS
+════════════════════════════════════════════ -->
+  <div class="page-bg" aria-hidden="true"></div>
+  <canvas id="sky-canvas" aria-hidden="true"></canvas>
+
+  <!-- ════════════════════════════════════════════
+     WELCOME SPLASH SCREEN
+════════════════════════════════════════════ -->
+  <div id="welcome-screen" role="button" tabindex="0" aria-label="Chạm để vào trang web">
+    <div class="welcome-content">
+      <div class="welcome-icon" aria-hidden="true">
+        <svg viewBox="0 0 72 72" fill="none">
+          <path
+            d="M36 52 C36 52 14 38 14 25 C14 18.4 19.4 13 26 13 C29.8 13 33.2 14.8 35.9 17.8 C38.6 14.8 42 13 46 13 C52.6 13 58 18.4 58 25 C58 38 36 52 36 52Z"
+            fill="#F5273A" />
+
+          <!-- Small sparkles -->
+          <circle cx="23.5" cy="21" r="2.5" fill="rgba(245, 216, 231, 0.8)" />
+        </svg>
+      </div>
+      <h1 class="welcome-title gate-text">Cin Ckào Cún Yêu Của Anh</h1>
+      <p class="welcome-subtitle gate-text">Một trang web nhỏ để nịnh vợ đừng mắng nữa~</p>
+      <span class="welcome-hint">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+          <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+          <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+          <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+        </svg>
+        Chạm để mở cánh cửa
+      </span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+     APP WRAPPER
+════════════════════════════════════════════ -->
+  <div class="app-wrapper">
+
+    <!-- ── HEADER ── -->
+    <header class="site-header" role="banner">
+      <div class="container">
+        <div class="header-inner">
+          <a href="#" class="site-logo" aria-label="Trang chủ">
+            <span class="logo-dot" aria-hidden="true"></span>
+            <span class="gate-text">Chúng Mình Vẫn Đang Cố Gắng</span>
+          </a>
+
+          <nav class="header-nav" aria-label="Điều hướng chính">
+            <a href="#hero" class="nav-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
+              <span>Trang chủ</span>
+            </a>
+            <a href="#timeline" class="nav-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>Hành trình</span>
+            </a>
+            <a href="#gallery" class="nav-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <span>Kỷ niệm</span>
+            </a>
+            <button class="btn-settings" id="btn-settings-header" aria-label="Mở cài đặt" title="Cài đặt">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- ════════════════════════════════════════
+       HERO — COUNTER + VINYL PLAYER
+  ════════════════════════════════════════ -->
+    <section id="hero" aria-labelledby="hero-heading">
+      <div class="container">
+        <div class="hero-grid">
+
+          <!-- ── LEFT: LOVE COUNTER ── -->
+          <div class="counter-panel">
+            <div class="counter-card glass-card appear">
+
+              <!-- Names Row -->
+              <div class="counter-names">
+                <div class="counter-name-tag">
+                  <div class="avatar" id="avatar-a" aria-label="Avatar A"
+                    style="background:linear-gradient(135deg,var(--sky-300),var(--rose-300));">A</div>
+                  <span id="counter-name-a">Kwaq</span>
+                </div>
+                <span class="counter-sep-heart" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </span>
+                <div class="counter-name-tag">
+                  <div class="avatar" id="avatar-b" aria-label="Avatar B"
+                    style="background:linear-gradient(135deg,var(--rose-300),var(--sky-300));">B</div>
+                  <span id="counter-name-b">Cún</span>
+                </div>
+              </div>
+
+              <!-- Days Big Number -->
+              <h1 id="hero-heading">
+                <div class="days-display">
+                  <span id="counter-days" class="days-number" aria-live="polite" aria-atomic="true">0</span>
+                  <span class="days-label">ngày</span>
+                </div>
+              </h1>
+              <p class="counter-subtitle">Cảm ơn vì đã cố gắng ở bên nhau...</p>
+
+              <p id="counter-summary" class="counter-summary" aria-live="polite" aria-atomic="true"></p>
+
+              <!-- Time Matrix -->
+              <div class="time-matrix" role="timer" aria-label="Thời gian bên nhau">
+                <div class="time-unit">
+                  <span id="time-years" class="time-value" aria-label="Năm">00</span>
+                  <span class="time-label">Năm</span>
+                </div>
+                <div class="time-unit">
+                  <span id="time-months" class="time-value" aria-label="Tháng">00</span>
+                  <span class="time-label">Tháng</span>
+                </div>
+                <div class="time-unit">
+                  <span id="time-days" class="time-value" aria-label="Ngày">00</span>
+                  <span class="time-label">Ngày</span>
+                </div>
+                <div class="time-unit">
+                  <span id="time-hours" class="time-value" aria-label="Giờ">00</span>
+                  <span class="time-label">Giờ</span>
+                </div>
+              </div>
+
+              <!-- Seconds + Minutes row -->
+              <div class="time-matrix time-matrix--small" role="timer" aria-label="Phút giây">
+                <div class="time-unit">
+                  <span id="time-minutes" class="time-value" aria-label="Phút">00</span>
+                  <span class="time-label">Phút</span>
+                </div>
+                <div class="time-unit">
+                  <span id="time-seconds" class="time-value" aria-label="Giây" style="color:var(--rose-400)">00</span>
+                  <span class="time-label">Giây</span>
+                </div>
+              </div>
+
+              <div class="special-days" aria-label="Ngày đặc biệt trong năm">
+                <h2 class="special-days-title">Ngày đặc biệt trong năm</h2>
+                <ul class="special-days-list" id="special-days-list"></ul>
+              </div>
+
+            </div><!-- /counter-card -->
+
+            <!-- Milestone Badges: yearly anniversary + monthly anniversary -->
+            <div class="milestone-stack">
+              <div class="milestone-badge milestone-badge--year appear appear-delay-1">
+                <div class="milestone-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-400)" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </div>
+                <div class="milestone-text">
+                  <div class="milestone-label" id="milestone-year-label">Kỷ niệm năm</div>
+                  <div class="milestone-countdown">
+                    <span class="milestone-days" id="milestone-year-days">—</span>
+                    <span class="milestone-days-unit" id="milestone-year-unit">ngày nữa</span>
+                  </div>
+                  <div class="milestone-date" id="milestone-year-date"></div>
+                  <div class="milestone-progress">
+                    <div class="milestone-progress-bar">
+                      <div class="milestone-progress-fill" id="milestone-year-progress" style="width:0%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="milestone-badge milestone-badge--month appear appear-delay-2">
+                <div class="milestone-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sky-400)" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 2.64-6.36" />
+                    <path d="M3 4.5V10h5.5" />
+                  </svg>
+                </div>
+                <div class="milestone-text">
+                  <div class="milestone-label" id="milestone-month-label">Kỷ niệm tháng</div>
+                  <div class="milestone-countdown">
+                    <span class="milestone-days" id="milestone-month-days">—</span>
+                    <span class="milestone-days-unit" id="milestone-month-unit">ngày nữa</span>
+                  </div>
+                  <div class="milestone-date" id="milestone-month-date"></div>
+                  <div class="milestone-progress">
+                    <div class="milestone-progress-bar">
+                      <div class="milestone-progress-fill" id="milestone-month-progress" style="width:0%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /counter-panel -->
+
+          <!-- ── RIGHT: VINYL PLAYER ── -->
+          <div class="vinyl-panel appear appear-delay-2">
+
+            <!-- Vinyl Turntable -->
+            <div class="vinyl-machine" role="img" aria-label="Máy phát nhạc đĩa than">
+              <!-- Platter base -->
+              <div class="vinyl-platter"></div>
+
+              <!-- Spinning disc wrapper -->
+              <div class="vinyl-disc-wrapper" id="vinyl-disc-wrapper">
+                <div class="vinyl-disc">
+                  <!-- Center label with couple photo / initials -->
+                  <div class="vinyl-label">
+                    <div class="vinyl-label-placeholder" id="vinyl-label-img" aria-label="Ảnh tâm đĩa">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)"
+                        stroke-width="1.5">
+                        <path
+                          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <!-- Spindle -->
+                  <div class="vinyl-spindle"></div>
+                </div>
+              </div>
+
+              <!-- Tonearm -->
+              <div class="vinyl-tonearm-wrapper paused" id="vinyl-tonearm" aria-hidden="true">
+                <div class="tonearm-pivot"></div>
+                <div class="tonearm-rod">
+                  <div class="tonearm-headshell">
+                    <div class="tonearm-stylus"></div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /vinyl-machine -->
+
+            <!-- Player Controls Card -->
+            <div class="player-controls glass-card" role="region" aria-label="Điều khiển nhạc">
+
+              <!-- Now Playing -->
+              <div class="now-playing">
+                <div class="now-playing-title" id="now-playing-title">Chọn một bài hát</div>
+                <div class="now-playing-artist" id="now-playing-artist">— playlist tình yêu —</div>
+              </div>
+
+              <!-- Progress bar -->
+              <div class="track-progress">
+                <div class="progress-track" id="progress-track" role="progressbar" aria-label="Tiến độ bài hát"
+                  aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-times">
+                  <span id="time-current">0:00</span>
+                  <span id="time-total">—</span>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div class="control-buttons">
+                <button class="ctrl-btn" id="btn-prev" aria-label="Bài trước">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
+                  </svg>
+                </button>
+                <button class="ctrl-btn ctrl-btn-play" id="btn-play" aria-label="Phát nhạc">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </button>
+                <button class="ctrl-btn" id="btn-next" aria-label="Bài tiếp theo">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 18l8.5-6L6 6zm8.5-6L23 18V6z" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Volume -->
+              <div class="volume-row">
+                <span class="volume-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  </svg>
+                </span>
+                <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="0.7"
+                  aria-label="Âm lượng">
+                <span class="volume-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                  </svg>
+                </span>
+              </div>
+
+              <!-- Playlist -->
+              <ul class="playlist-mini" id="playlist-mini" aria-label="Danh sách phát"></ul>
+
+            </div><!-- /player-controls -->
+
+          </div><!-- /vinyl-panel -->
+
+        </div><!-- /hero-grid -->
+      </div>
+    </section>
+
+    <div class="section-sep" aria-hidden="true"></div>
+
+    <!-- ════════════════════════════════════════
+       TIMELINE — LOVE JOURNEY
+  ════════════════════════════════════════ -->
+    <section id="timeline" aria-labelledby="timeline-heading">
+      <div class="container">
+        <div class="timeline-header appear">
+          <p class="section-eyebrow" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            Hành Trình Của Chúng Mình
+          </p>
+          <h2 id="timeline-heading" class="section-title gate-text">Những khoảnh khắc<br>đáng nhớ nhất</h2>
+        </div>
+        <div class="timeline-wrap" id="timeline-wrap" aria-label="Dòng thời gian tình yêu"></div>
+      </div>
+    </section>
+
+    <div class="section-sep" aria-hidden="true"></div>
+
+    <!-- ════════════════════════════════════════
+       GALLERY — POLAROID PHOTOS
+  ════════════════════════════════════════ -->
+    <section id="gallery" aria-labelledby="gallery-heading">
+      <div class="container">
+        <div class="gallery-header appear">
+          <p class="section-eyebrow" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            Album Kỷ Niệm
+          </p>
+          <h2 id="gallery-heading" class="section-title gate-text">Những bức ảnh<br>của riêng chúng mình</h2>
+        </div>
+        <div class="polaroid-grid" id="polaroid-grid" aria-label="Album ảnh kỷ niệm"></div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════ -->
+    <footer
+      style="text-align:center; padding: var(--space-12) 0 var(--space-16); color: var(--color-text-light); font-size: var(--text-sm);">
+      <div class="container">
+        <div
+          style="display:flex;align-items:center;justify-content:center;gap:var(--space-2);margin-bottom:var(--space-2);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--rose-300)" aria-hidden="true">
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          <span>Anh hy vọng em luôn là bông hoa nở lúc 4h sáng của anh</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--rose-300)" aria-hidden="true">
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- /app-wrapper -->
+
+  <!-- ════════════════════════════════════════
+     LIGHTBOX
+════════════════════════════════════════ -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh phóng to">
+    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+    <button class="lightbox-close" id="lightbox-close" aria-label="Đóng ảnh">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+    <div class="lightbox-content">
+      <div class="lightbox-photo">
+        <img id="lightbox-img" src="" alt="Ảnh kỷ niệm phóng to">
+      </div>
+      <p class="lightbox-caption-lb" id="lightbox-caption"></p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+     SETTINGS OVERLAY + DRAWER
+════════════════════════════════════════ -->
+  <div id="settings-overlay" class="settings-overlay" aria-hidden="true"></div>
+
+  <aside id="settings-drawer" class="settings-drawer" role="dialog" aria-modal="true" aria-label="Cài đặt trang web">
+
+    <!-- PIN Lock Screen -->
+    <div id="pin-lock" class="pin-lock" role="dialog" aria-label="Nhập mã PIN">
+      <div class="pin-lock-icon" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      </div>
+      <h2 class="pin-lock-title">Nhập mã PIN</h2>
+      <p class="pin-lock-hint">Mã mặc định: ngày bắt đầu yêu (DDMM)</p>
+      <div class="pin-dots" role="group" aria-label="Mã PIN đã nhập">
+        <div class="pin-dot" aria-hidden="true"></div>
+        <div class="pin-dot" aria-hidden="true"></div>
+        <div class="pin-dot" aria-hidden="true"></div>
+        <div class="pin-dot" aria-hidden="true"></div>
+      </div>
+      <p class="pin-error" id="pin-error" role="alert" aria-live="polite"></p>
+      <div class="pin-pad" role="group" aria-label="Bàn phím số">
+        <button class="pin-key" data-key="1" aria-label="1">1</button>
+        <button class="pin-key" data-key="2" aria-label="2">2</button>
+        <button class="pin-key" data-key="3" aria-label="3">3</button>
+        <button class="pin-key" data-key="4" aria-label="4">4</button>
+        <button class="pin-key" data-key="5" aria-label="5">5</button>
+        <button class="pin-key" data-key="6" aria-label="6">6</button>
+        <button class="pin-key" data-key="7" aria-label="7">7</button>
+        <button class="pin-key" data-key="8" aria-label="8">8</button>
+        <button class="pin-key" data-key="9" aria-label="9">9</button>
+        <button class="pin-key" data-key="0" aria-label="0" style="grid-column:2">0</button>
+        <button class="pin-key pin-key-del" data-key="del" aria-label="Xóa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
+            <line x1="18" y1="9" x2="12" y2="15" />
+            <line x1="12" y1="9" x2="18" y2="15" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Drawer Header -->
+    <div class="drawer-header">
+      <h2 class="drawer-title">Cài đặt trang web</h2>
+      <button class="drawer-close" id="drawer-close" aria-label="Đóng cài đặt">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="drawer-body">
+
+      <div class="settings-tabs" role="tablist" aria-label="Nhóm cài đặt">
+        <button class="settings-tab active" role="tab" aria-selected="true" aria-controls="panel-chung"
+          data-tab="panel-chung">Chung</button>
+        <button class="settings-tab" role="tab" aria-selected="false" aria-controls="panel-timeline"
+          data-tab="panel-timeline">Hành trình</button>
+        <button class="settings-tab" role="tab" aria-selected="false" aria-controls="panel-ky-niem"
+          data-tab="panel-ky-niem">Kỷ niệm</button>
+        <button class="settings-tab" role="tab" aria-selected="false" aria-controls="panel-he-thong"
+          data-tab="panel-he-thong">Hệ thống</button>
+      </div>
+
+      <div class="settings-panel active" id="panel-chung" role="tabpanel">
+
+        <!-- Section: Thông tin đôi -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Thông tin của hai bạn</h3>
+
+          <div class="avatar-row">
+            <!-- Avatar A -->
+            <div class="avatar-picker" id="avatar-picker-a" role="button" tabindex="0" aria-label="Chọn ảnh đại diện A">
+              <div class="avatar-preview" id="avatar-preview-a">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)"
+                  stroke-width="1.5">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <span class="avatar-picker-label">Ảnh của bạn</span>
+              <input type="file" id="avatar-input-a" accept="image/*" style="display:none" aria-hidden="true">
+            </div>
+            <!-- Avatar B -->
+            <div class="avatar-picker" id="avatar-picker-b" role="button" tabindex="0" aria-label="Chọn ảnh đại diện B">
+              <div class="avatar-preview" id="avatar-preview-b"
+                style="background:linear-gradient(135deg,var(--rose-300),var(--sky-300));">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)"
+                  stroke-width="1.5">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <span class="avatar-picker-label">Ảnh bạn gái</span>
+              <input type="file" id="avatar-input-b" accept="image/*" style="display:none" aria-hidden="true">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="inp-name-a">Tên của bạn</label>
+              <input type="text" id="inp-name-a" placeholder="Anh" maxlength="20">
+            </div>
+            <div class="field">
+              <label for="inp-name-b">Tên bạn gái</label>
+              <input type="text" id="inp-name-b" placeholder="Em" maxlength="20">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="inp-start-date">Ngày bắt đầu yêu nhau</label>
+            <input type="date" id="inp-start-date">
+          </div>
+        </div>
+
+        <!-- Section: Gam màu nền -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Gam màu nền</h3>
+          <div class="theme-picker" role="radiogroup" aria-label="Chọn gam màu nền">
+            <div class="theme-option active" data-theme="deep-blue" role="radio" aria-checked="true" tabindex="0">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #326493, #689ec7);"></span>
+              <span>Xanh Biển Đậm</span>
+            </div>
+            <div class="theme-option" data-theme="midnight" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #0e1726, #1e3252);"></span>
+              <span>Đêm Ngàn Sao</span>
+            </div>
+            <div class="theme-option" data-theme="pastel-sky" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #daeeff, #f0f8ff);"></span>
+              <span>Xanh Pastel</span>
+            </div>
+            <div class="theme-option" data-theme="sunset" role="radio" aria-checked="false" tabindex="0">
+              <span class="theme-swatch" style="background: linear-gradient(135deg, #e47c7c, #f7b5a8);"></span>
+              <span>Hoàng Hôn Hồng</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /panel-chung -->
+
+      <div class="settings-panel" id="panel-ky-niem" role="tabpanel" hidden>
+
+        <!-- Section: Quản lý âm nhạc -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Quản lý âm nhạc</h3>
+          <div class="music-actions-row">
+            <button class="btn btn-ghost" id="btn-upload-music" type="button" aria-label="Tải nhạc từ máy">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+              </svg>
+              Tải MP3 từ máy
+            </button>
+            <input type="file" id="music-upload-input" accept="audio/*" style="display:none" aria-hidden="true">
+          </div>
+          <button class="btn btn-ghost" id="btn-clear-playlist" type="button">Xóa hết nhạc</button>
+          <ul class="settings-playlist-list" id="settings-playlist-list">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+
+        <!-- Section: Hiệu ứng nền -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Hiệu ứng rơi</h3>
+          <div class="effect-picker" role="radiogroup" aria-label="Chọn hiệu ứng nền">
+            <div class="effect-option active" data-effect="hearts" role="radio" aria-checked="true" tabindex="0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+              Trái tim bay
+            </div>
+            <div class="effect-option" data-effect="clouds" role="radio" aria-checked="false" tabindex="0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                aria-hidden="true">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+              </svg>
+              Mây trôi
+            </div>
+            <div class="effect-option" data-effect="fireflies" role="radio" aria-checked="false" tabindex="0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                aria-hidden="true">
+                <circle cx="12" cy="12" r="2" />
+                <path
+                  d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83" />
+              </svg>
+              Đom đóm
+            </div>
+            <div class="effect-option" data-effect="petals" role="radio" aria-checked="false" tabindex="0">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                aria-hidden="true">
+                <path d="M12 22V12m0-10c0 5.52-4.48 10-10 10h10c0-5.52 4.48-10 10-10H12" />
+              </svg>
+              Cánh hoa
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Thêm ảnh kỷ niệm -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Thêm ảnh kỷ niệm</h3>
+          <div class="upload-zone" id="photo-upload-zone" role="button" tabindex="0" aria-label="Tải ảnh lên">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+              <line x1="12" y1="1" x2="12" y2="5" />
+              <polyline points="10 3 12 1 14 3" />
+            </svg>
+            <p class="upload-zone-text">Kéo thả hoặc bấm để chọn ảnh</p>
+            <p class="upload-zone-hint">Ảnh sẽ được nén tự động, hỗ trợ JPG, PNG, WEBP</p>
+          </div>
+          <input type="file" id="photo-upload-input" accept="image/*" multiple style="display:none" aria-hidden="true">
+        </div>
+      </div><!-- /panel-ky-niem -->
+
+      <div class="settings-panel" id="panel-timeline" role="tabpanel" hidden>
+
+        <!-- Section: Hành trình -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Hành trình</h3>
+          <ul class="timeline-editor-list" id="timeline-editor-list">
+            <!-- Populated dynamically -->
+          </ul>
+          <button class="btn btn-ghost" id="btn-add-timeline" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Thêm mốc mới
+          </button>
+
+          <form class="timeline-form" id="timeline-form" novalidate hidden>
+            <div class="field-row">
+              <div class="field">
+                <label for="tl-date">Ngày</label>
+                <input type="date" id="tl-date">
+              </div>
+              <div class="field">
+                <label for="tl-icon">Biểu tượng</label>
+                <select id="tl-icon">
+                  <option value="star">Ngôi sao</option>
+                  <option value="heart">Trái tim</option>
+                  <option value="map">Bản đồ</option>
+                  <option value="cake">Bánh kem</option>
+                  <option value="gift">Món quà</option>
+                  <option value="music">Âm nhạc</option>
+                  <option value="camera">Máy ảnh</option>
+                  <option value="home">Mái nhà</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="tl-title">Tiêu đề</label>
+              <input type="text" id="tl-title" maxlength="60" placeholder="Kỷ niệm 1 năm">
+            </div>
+
+            <div class="field">
+              <label for="tl-desc">Mô tả</label>
+              <textarea id="tl-desc" rows="2" maxlength="240"
+                placeholder="Một năm chứa đầy những khoảnh khắc đẹp..."></textarea>
+            </div>
+
+            <div class="field">
+              <label for="tl-tag">Nhãn</label>
+              <select id="tl-tag">
+                <option value="">Không nhãn</option>
+                <option value="Duyên khởi">Duyên khởi</option>
+                <option value="Kỷ niệm">Kỷ niệm</option>
+                <option value="Phiêu lưu">Phiêu lưu</option>
+                <option value="Mốc son">Mốc son</option>
+              </select>
+            </div>
+
+            <p class="timeline-form-error" id="tl-error" role="alert" aria-live="polite"></p>
+
+            <div class="timeline-form-actions">
+              <button class="btn btn-primary" id="tl-save" type="submit">Lưu mốc</button>
+              <button class="btn btn-ghost" id="tl-cancel" type="button">Hủy</button>
+            </div>
+          </form>
+        </div>
+      </div><!-- /panel-timeline -->
+
+      <div class="settings-panel" id="panel-he-thong" role="tabpanel" hidden>
+
+        <!-- Section: Bảo mật -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Mã PIN bảo vệ</h3>
+          <div class="field">
+            <label for="inp-pin">Mã PIN mới (4 chữ số)</label>
+            <input type="text" id="inp-pin" placeholder="0214" maxlength="4" pattern="[0-9]{4}" inputmode="numeric">
+          </div>
+        </div>
+
+        <!-- Section: Sao lưu -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Sao lưu dữ liệu</h3>
+          <div class="import-export-row">
+            <button class="btn btn-ghost" id="btn-export" aria-label="Xuất dữ liệu">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Xuất file
+            </button>
+            <button class="btn btn-ghost" id="btn-import" aria-label="Nhập dữ liệu">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Nhập file
+            </button>
+            <input type="file" id="import-input" accept=".json" style="display:none" aria-hidden="true">
+          </div>
+        </div>
+      </div><!-- /panel-he-thong -->
+
+    </div><!-- /drawer-body -->
+
+    <!-- Drawer Footer -->
+    <div class="drawer-footer">
+      <button class="btn btn-primary" id="btn-save-settings" style="flex:1" aria-label="Lưu cài đặt">
+        Lưu thay đổi
+      </button>
+      <button class="btn btn-ghost" id="btn-reset" aria-label="Đặt lại về mặc định">
+        Đặt lại
+      </button>
+    </div>
+
+  </aside><!-- /settings-drawer -->
+
+  <!-- Floating Mini Music Player (appears on scroll) -->
+  <div id="mini-player-pill" class="mini-player-pill" role="region" aria-label="Trình phát nhạc thu nhỏ">
+    <div class="mini-disc" aria-hidden="true">
+      <div class="mini-disc-center"></div>
+    </div>
+    <button id="mini-btn-play" class="mini-btn-play" aria-label="Phát / Dừng">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- JS Entry -->
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

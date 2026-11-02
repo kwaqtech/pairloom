@@ -1,0 +1,93 @@
+
+=== DIRECTORY TREE (max depth 3, source files only) ===
+assets
+assets\images
+assets\music
+assets\music\chay-ve-khoc-voi-anh.mp3
+assets\music\co-em-cho.mp3
+assets\music\love.mp3
+assets\music\mot-nha.mp3
+assets\music\nguoi-am-nhac.mp3
+assets\music\sample-melody.mp3
+assets\music\yeu-em-dai-kho.mp3
+css
+css\components
+css\components\counter.css
+css\components\gallery.css
+css\components\settings.css
+css\components\timeline.css
+css\components\vinyl.css
+css\main.css
+css\tokens.css
+docs
+docs\codebase
+docs\codebase\.codebase-scan.txt
+index.html
+js
+js\app.js
+js\config.js
+js\counter.js
+js\gallery.js
+js\settings.js
+js\sky-canvas.js
+js\state.js
+js\timeline.js
+js\vinyl.js
+
+=== STACK DETECTION (manifest files) ===
+No recognized manifest files found in project root.
+
+=== ENTRY POINTS ===
+No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
+
+=== LINTING AND FORMATTING CONFIG ===
+No linting or formatting config files found in project root.
+
+=== ENVIRONMENT VARIABLE TEMPLATES ===
+No .env.example or .env.template found. Identify required environment variables by searching the code and config for environment variable reads.
+
+=== TODO / FIXME / HACK (production code only, test dirs excluded) ===
+None found.
+
+=== GIT RECENT COMMITS (last 20) ===
+No commits found.
+
+=== HIGH-CHURN FILES (last 90 days, top 20) ===
+None found.
+
+=== MONOREPO SIGNALS ===
+No monorepo signals detected.
+
+=== CODE METRICS ===
+Total files scanned: 25
+Total lines of code: 1842
+
+Files by language:
+  Other: 16
+  JavaScript: 9
+
+Top 10 largest files:
+assets\music\co-em-cho.mp3: 10344.4KB
+assets\music\love.mp3: 10344.4KB
+assets\music\mot-nha.mp3: 10344.4KB
+assets\music\yeu-em-dai-kho.mp3: 10344.4KB
+assets\music\chay-ve-khoc-voi-anh.mp3: 8735.6KB
+assets\music\nguoi-am-nhac.mp3: 8735.6KB
+assets\music\sample-melody.mp3: 8735.6KB
+index.html: 35.3KB
+js\settings.js: 14.2KB
+css\main.css: 13.6KB
+
+=== CI/CD PIPELINES ===
+No CI/CD pipelines detected.
+
+=== CONTAINERS & ORCHESTRATION ===
+No containerization configs detected.
+
+=== SECURITY & COMPLIANCE ===
+No security configs detected.
+
+=== PERFORMANCE & TESTING ===
+No performance testing configs detected.
+
+=== SCAN COMPLETE ===
