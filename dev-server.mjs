@@ -8,8 +8,10 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(process.argv[3] || '.');
+const ROOT_REAL = fs.realpathSync(ROOT);
 const PORT = Number(process.argv[2] || 8000);
 
 const MIME = {
@@ -31,32 +33,80 @@ const MIME = {
   '.woff2': 'font/woff2',
 };
 
-const server = http.createServer((req, res) => {
-  const urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  const rel = urlPath === '/' ? 'index.html' : urlPath.slice(1);
-  const filePath = path.join(ROOT, rel);
+export function isAllowedRelativePath(relativePath) {
+  const parts = relativePath.split(/[\\/]+/).filter(Boolean).map(part => part.toLowerCase());
+  if (!parts.length || parts.some(part => part === '..' || part.startsWith('.'))) return false;
+  if (parts.length === 1) return parts[0] === 'index.html';
+  if (!['assets', 'css', 'js'].includes(parts[0])) return false;
+  return !(parts[0] === 'assets' && parts[1] === 'user-media');
+}
 
-  // block path traversal
-  if (!filePath.startsWith(ROOT)) {
+export function resolveStaticPath(root, urlPath) {
+  const rootPath = path.resolve(root);
+  const filePath = path.resolve(rootPath, `.${urlPath}`);
+  const relativePath = path.relative(rootPath, filePath);
+  if (!relativePath || relativePath === '..' || relativePath.startsWith(`..${path.sep}`) || path.isAbsolute(relativePath)) {
+    return null;
+  }
+  return isAllowedRelativePath(relativePath) ? filePath : null;
+}
+
+const server = http.createServer((req, res) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.writeHead(405, { Allow: 'GET, HEAD' }).end('Method not allowed');
+    return;
+  }
+
+  let urlPath;
+  try {
+    urlPath = decodeURIComponent(new URL(req.url, 'http://127.0.0.1').pathname);
+  } catch {
+    res.writeHead(400).end('Bad request');
+    return;
+  }
+
+  if (urlPath.includes('\0')) {
+    res.writeHead(400).end('Bad request');
+    return;
+  }
+
+  const filePath = resolveStaticPath(ROOT_REAL, urlPath === '/' ? '/index.html' : urlPath);
+  if (!filePath) {
     res.writeHead(403).end('Forbidden');
     return;
   }
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Not found: ' + rel);
+  fs.realpath(filePath, (realPathError, realPath) => {
+    if (realPathError) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Not found');
       return;
     }
-    res.writeHead(200, {
-      'Content-Type': MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
-      'Cache-Control': 'no-store, no-cache, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0',
+
+    const relativePath = path.relative(ROOT_REAL, realPath);
+    if (!isAllowedRelativePath(relativePath)) {
+      res.writeHead(403).end('Forbidden');
+      return;
+    }
+
+    fs.readFile(realPath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Not found');
+        return;
+      }
+      res.writeHead(200, {
+        'Content-Type': MIME[path.extname(realPath).toLowerCase()] || 'application/octet-stream',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'X-Content-Type-Options': 'nosniff',
+      });
+      res.end(req.method === 'HEAD' ? undefined : data);
     });
-    res.end(data);
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`dev server → http://localhost:${PORT}  (root: ${ROOT}, no-cache)`);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  server.listen(PORT, '127.0.0.1', () => {
+    console.log(`dev server → http://127.0.0.1:${PORT}  (root: ${ROOT_REAL}, no-cache)`);
+  });
+}

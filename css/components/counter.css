@@ -98,7 +98,7 @@
 
 .days-number {
   font-family: var(--font-display);
-  font-size: clamp(4rem, 10vw, 7rem);
+  font-size: clamp(3.5rem, 9vw, 6.5rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -121,15 +121,21 @@
 
 .counter-summary {
   font-size: var(--text-sm);
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--color-text-secondary);
-  margin: 0 0 var(--space-3);
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .counter-subtitle {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--space-6);
+  max-width: 34ch;
+  margin: 0 auto var(--space-3);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  color: var(--color-text-secondary);
 }
 
 .special-days {
@@ -163,8 +169,9 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  min-width: 0;
   gap: var(--space-3);
-  padding: 8px 10px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.45);
   font-size: var(--text-sm);

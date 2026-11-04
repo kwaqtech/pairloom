@@ -30,7 +30,7 @@
 
 - Error strategy by layer: `try/catch` on storage and FileReader; vinyl logs `console.warn('[Vinyl] ...')`; settings shows `showToast`
 - Logging style and required context fields: prefix `[State]` / `[Vinyl]`
-- Sensitive-data redaction rules: [TODO] PIN stored in localStorage in plaintext (`js/config.js` `pin`, `js/state.js`)
+- Sensitive-data redaction rules: never commit user exports, media, OAuth client secrets, or Supabase service-role keys; browser-visible Supabase publishable keys are not secrets and rely on RLS.
 
 ### 5) Testing Conventions
 

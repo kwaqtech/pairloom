@@ -11,6 +11,7 @@ import { initGallery }    from './gallery.js';
 import { initTimeline }   from './timeline.js';
 import { initSettings }   from './settings.js';
 import { migrateLegacyAudio } from './media-store.js';
+import { initAuthGate } from './auth.js';
 
 // ── TOAST SYSTEM ──
 const toastContainer = document.getElementById('toast-container');
@@ -45,7 +46,7 @@ function initHeartBurst() {
 
   window.addEventListener('click', (e) => {
     // Skip if clicking inputs, buttons, sliders, or links
-    if (e.target.closest('button, input, textarea, a, .effect-option, .theme-option, .upload-zone, .pin-key')) return;
+    if (e.target.closest('button, input, textarea, a, .effect-option, .theme-option, .upload-zone')) return;
     spawnHeart(e.clientX, e.clientY);
   });
 
@@ -128,7 +129,7 @@ function initGlobalAppear() {
 }
 
 // ── MAIN ──
-async function main() {
+export async function initApp() {
   // 0. Theme initialization first
   initTheme();
 
@@ -163,9 +164,50 @@ async function main() {
   });
 }
 
-// Run when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', main);
-} else {
-  main();
+let appStartPromise = null;
+
+async function startAuthorizedApp() {
+  if (!appStartPromise) appStartPromise = initApp();
+  await appStartPromise;
 }
+
+function lockPrivateApp() {
+  document.body.classList.add('auth-pending');
+  store.clearPrivate();
+
+  document.getElementById('settings-drawer')?.classList.remove('open');
+  document.getElementById('settings-overlay')?.classList.remove('open');
+  document.body.style.overflow = '';
+  const accountEmail = document.getElementById('settings-account-email');
+  if (accountEmail) accountEmail.textContent = '';
+  ['inp-name-a', 'inp-name-b', 'inp-start-date'].forEach((id) => {
+    const element = document.getElementById(id);
+    if (element) element.value = '';
+  });
+  ['avatar-preview-a', 'avatar-preview-b'].forEach((id) => {
+    document.getElementById(id)?.querySelector('img')?.remove();
+  });
+
+  const lightbox = document.getElementById('lightbox');
+  if (lightbox) {
+    lightbox.classList.remove('open');
+    lightbox.inert = true;
+    lightbox.setAttribute('aria-hidden', 'true');
+  }
+  const photo = document.getElementById('lightbox-img');
+  if (photo) photo.src = '';
+  const caption = document.getElementById('lightbox-caption');
+  if (caption) caption.textContent = '';
+}
+
+// Auth gate verifies membership before starting the app; cloud data loading is not wired yet.
+initAuthGate({ onActiveSpace: startAuthorizedApp, onLocked: lockPrivateApp }).catch(() => {
+  lockPrivateApp();
+  const status = document.getElementById('auth-status');
+  const error = document.getElementById('auth-error');
+  if (status) status.textContent = 'Không khởi tạo được đăng nhập.';
+  if (error) {
+    error.textContent = 'Tải lại trang rồi thử lại.';
+    error.hidden = false;
+  }
+});

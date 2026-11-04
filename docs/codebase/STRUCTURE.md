@@ -12,6 +12,7 @@
 | `assets/music/` | Local MP3 playlist files | scan tree; `js/config.js` `src` paths |
 | `assets/images/` | Image assets directory | scan tree |
 | `docs/codebase/` | Generated codebase knowledge | this folder |
+| `supabase/migrations/` | PostgreSQL schema, RLS, Storage policies, and RPCs | `supabase/migrations/0001_private_pairs.sql` |
 
 ### 2) Entry Points
 
@@ -27,8 +28,8 @@
 | `js/state.js` | Load/save/merge localStorage, emit changes | DOM |
 | `js/config.js` | Default couple data, playlist, timeline, milestones | Runtime I/O |
 | `js/counter.js` | Day counter + special-days list | Audio |
-| `js/vinyl.js` | Audio element, playlist UI, tonearm/disc classes | Settings PIN |
-| `js/settings.js` | PIN drawer, form save, uploads | Canvas particles |
+| `js/vinyl.js` | Audio element, playlist UI, tonearm/disc classes | Settings state |
+| `js/settings.js` | Settings drawer, form save, uploads | Canvas particles |
 | `js/gallery.js` / `js/timeline.js` | Photo grid / journey list | Persistence internals |
 | `js/sky-canvas.js` | Background particle canvas | App state besides reading `bgEffect` |
 | `css/components/*.css` | Styles for matching JS features | Script |

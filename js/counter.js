@@ -5,6 +5,7 @@
  */
 
 import store from './state.js';
+import { safeMediaUrl } from './media-url.js';
 
 const elDays = document.getElementById('counter-days');
 const elYears = document.getElementById('time-years');
@@ -76,17 +77,27 @@ function daysUntil(from, month, day) {
 function renderSpecialDays(now) {
   if (!elEvents) return;
   const list = store.get('specialDays') || [];
-  const ranked = list
+  const ranked = (Array.isArray(list) ? list : [])
+    .filter((ev) => ev && Number.isInteger(ev.month) && ev.month >= 1 && ev.month <= 12
+      && Number.isInteger(ev.day) && ev.day >= 1 && ev.day <= new Date(2000, ev.month, 0).getDate()
+      && typeof ev.label === 'string')
     .map((ev) => ({ ...ev, remain: daysUntil(now, ev.month, ev.day) }))
     .sort((a, b) => a.remain - b.remain);
 
-  elEvents.innerHTML = ranked.map((ev, i) => {
+  elEvents.replaceChildren();
+  ranked.forEach((ev, i) => {
     const when = ev.remain === 0 ? 'Hôm nay' : `Còn ${ev.remain} ngày`;
-    return `<li class="special-day-item${i === 0 ? ' next' : ''}">
-      <span class="special-day-name">${ev.label}</span>
-      <span class="special-day-meta">${pad(ev.day)}/${pad(ev.month)} · ${when}</span>
-    </li>`;
-  }).join('');
+    const item = document.createElement('li');
+    item.className = `special-day-item${i === 0 ? ' next' : ''}`;
+    const name = document.createElement('span');
+    name.className = 'special-day-name';
+    name.textContent = ev.label;
+    const meta = document.createElement('span');
+    meta.className = 'special-day-meta';
+    meta.textContent = `${pad(ev.day)}/${pad(ev.month)} · ${when}`;
+    item.append(name, meta);
+    elEvents.appendChild(item);
+  });
 }
 
 // ── ANNIVERSARIES ──
@@ -153,24 +164,30 @@ function renderAnniversary(prefix, info) {
 }
 
 function renderMeta() {
-  const nameA = store.get('nameA') || 'Kwaq';
-  const nameB = store.get('nameB') || 'Cún';
-  const avatarA = store.get('avatarA') || '';
-  const avatarB = store.get('avatarB') || '';
+  const nameA = store.get('nameA') || 'Bạn A';
+  const nameB = store.get('nameB') || 'Bạn B';
+  const avatarA = safeMediaUrl(store.get('avatarA'), 'image');
+  const avatarB = safeMediaUrl(store.get('avatarB'), 'image');
 
   if (elNameA) elNameA.textContent = nameA;
   if (elNameB) elNameB.textContent = nameB;
 
   if (elAvatarA) {
     if (avatarA) {
-      elAvatarA.innerHTML = `<img src="${avatarA}" alt="${nameA}">`;
+      const img = document.createElement('img');
+      img.src = avatarA;
+      img.alt = nameA;
+      elAvatarA.replaceChildren(img);
     } else {
       elAvatarA.textContent = nameA.charAt(0).toUpperCase();
     }
   }
   if (elAvatarB) {
     if (avatarB) {
-      elAvatarB.innerHTML = `<img src="${avatarB}" alt="${nameB}">`;
+      const img = document.createElement('img');
+      img.src = avatarB;
+      img.alt = nameB;
+      elAvatarB.replaceChildren(img);
     } else {
       elAvatarB.textContent = nameB.charAt(0).toUpperCase();
     }
@@ -195,6 +212,10 @@ function tick() {
     renderAnniversary('month', null);
     renderSpecialDays(now);
     return;
+  }
+
+  if (elSummary) {
+    elSummary.textContent = `Bắt đầu từ ${start.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' })}`;
   }
 
   if (elDays) elDays.textContent = diff.totalDays.toLocaleString('vi-VN');

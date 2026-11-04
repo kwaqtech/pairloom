@@ -1,0 +1,127 @@
+name: Security pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: '23 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Dependencies, tests, build, SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Dependency vulnerability scan
+        run: npm audit --audit-level=low
+      - name: Security regression tests
+        run: node --test
+      - name: Production build
+        run: npm run build
+      - name: Generate CycloneDX SBOM
+        run: npm sbom --sbom-format cyclonedx > sbom.cdx.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: security-sbom
+          path: sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 30
+
+  secrets:
+    name: Secret scan (working tree and Git history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Install pinned Gitleaks release
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          curl --fail --silent --show-error --location \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            --output /tmp/gitleaks.tar.gz
+          curl --fail --silent --show-error --location \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt" \
+            --output /tmp/gitleaks_checksums.txt
+          (cd /tmp && grep "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz$" gitleaks_checksums.txt | sha256sum --check --status)
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo install /tmp/gitleaks /usr/local/bin/gitleaks
+      - name: Scan current files
+        run: gitleaks dir . --redact --exit-code 1
+      - name: Scan Git history
+        run: gitleaks git . --redact --exit-code 1
+
+  codeql:
+    name: JavaScript SAST (CodeQL)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v4
+
+  dast:
+    name: Staging DAST (OWASP ZAP baseline)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Require HTTPS staging URL
+        env:
+          STAGING_URL: ${{ vars.STAGING_URL }}
+        run: |
+          node --input-type=module -e '
+            const target = new URL(process.env.STAGING_URL ?? "");
+            if (target.protocol !== "https:" || target.username || target.password) {
+              console.error("STAGING_URL must be an HTTPS URL without embedded credentials");
+              process.exit(1);
+            }
+          '
+      - uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: ${{ vars.STAGING_URL }}
+          artifact_name: zap-baseline-report
+          fail_action: true
+          allow_issue_writing: false
+
+  release-gate:
+    name: Security release gate
+    if: ${{ always() }}
+    needs: [checks, secrets, codeql, dast]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require clean CI and security results
+        env:
+          CHECKS: ${{ needs.checks.result }}
+          SECRETS: ${{ needs.secrets.result }}
+          CODEQL: ${{ needs.codeql.result }}
+          DAST: ${{ needs.dast.result }}
+        run: |
+          [[ "$CHECKS" == success ]]
+          [[ "$SECRETS" == success ]]
+          [[ "$CODEQL" == success ]]
+          [[ "$DAST" == success ]]
+

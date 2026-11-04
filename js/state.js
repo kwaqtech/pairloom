@@ -7,18 +7,17 @@
 import DEFAULT_CONFIG from './config.js';
 
 const STORAGE_KEY = 'celestial_romance_v1';
-const DEFAULTS_MIGRATION_KEY = 'celestial_romance_defaults_v2';
+const DEFAULTS_MIGRATION_KEY = 'celestial_romance_defaults_v3';
+const MAX_BACKUP_BYTES = 20 * 1024 * 1024;
 
 const clone = (obj) => JSON.parse(JSON.stringify(obj));
 
-const CORE_KEYS = ['nameA', 'nameB', 'startDate', 'pin', 'theme', 'bgEffect', 'milestones', 'timeline', 'specialDays'];
+const CORE_KEYS = ['nameA', 'nameB', 'startDate', 'theme', 'bgEffect', 'milestones', 'timeline', 'specialDays'];
 
 function applyDefaultMigration(state) {
-  if (localStorage.getItem(DEFAULTS_MIGRATION_KEY) === '2') return state;
+  if (localStorage.getItem(DEFAULTS_MIGRATION_KEY) === '3') return state;
   const next = { ...state };
-  if (next.nameA === 'Anh') next.nameA = DEFAULT_CONFIG.nameA;
-  if (next.nameB === 'Em') next.nameB = DEFAULT_CONFIG.nameB;
-  if (next.startDate === '2024-02-14') next.startDate = DEFAULT_CONFIG.startDate;
+  delete next.pin;
   const oldPlaylistIds = ['p1', 'p2', 'p3', 'p4', 'p5'];
   const ids = (next.playlist || []).map(t => t.id).join(',');
   if (ids === oldPlaylistIds.join(',')) {
@@ -27,7 +26,7 @@ function applyDefaultMigration(state) {
   if (!Array.isArray(next.specialDays) || !next.specialDays.length) {
     next.specialDays = clone(DEFAULT_CONFIG.specialDays);
   }
-  try { localStorage.setItem(DEFAULTS_MIGRATION_KEY, '2'); } catch (_) { /* ignore */ }
+  try { localStorage.setItem(DEFAULTS_MIGRATION_KEY, '3'); } catch (_) { /* ignore */ }
   return next;
 }
 
@@ -94,6 +93,7 @@ function saveState(state) {
 function deepMerge(target, source) {
   const result = { ...target };
   for (const key of Object.keys(source)) {
+    if (key === '__proto__' || key === 'prototype' || key === 'constructor') continue;
     if (
       source[key] !== null &&
       typeof source[key] === 'object' &&
@@ -109,9 +109,11 @@ function deepMerge(target, source) {
 
 class StateStore {
   constructor() {
-    this._state = loadState();
+    const authPending = document.body?.classList.contains('auth-pending');
+    this._persistLocally = !authPending;
+    this._state = authPending ? clone(DEFAULT_CONFIG) : loadState();
     this._listeners = new Map();
-    saveState(this._state);
+    if (this._persistLocally) saveState(this._state);
   }
 
   get(key) {
@@ -120,7 +122,7 @@ class StateStore {
 
   set(key, value) {
     this._state[key] = value;
-    const saved = saveState(this._state);
+    const saved = !this._persistLocally || saveState(this._state);
     this._emit(key, value);
     return saved;
   }
@@ -129,7 +131,7 @@ class StateStore {
     for (const [k, v] of Object.entries(updates)) {
       this._state[k] = v;
     }
-    const saved = saveState(this._state);
+    const saved = !this._persistLocally || saveState(this._state);
     for (const [k, v] of Object.entries(updates)) {
       this._emit(k, v);
     }
@@ -164,12 +166,20 @@ class StateStore {
 
   import(file) {
     return new Promise((resolve, reject) => {
+      if (!file || file.size > MAX_BACKUP_BYTES) {
+        reject(new Error('Backup file is missing or too large'));
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const imported = JSON.parse(e.target.result);
+          if (!imported || typeof imported !== 'object' || Array.isArray(imported)) {
+            throw new Error('Backup must contain a JSON object');
+          }
+          delete imported.pin;
           this._state = deepMerge(clone(DEFAULT_CONFIG), imported);
-          saveState(this._state);
+          if (this._persistLocally) saveState(this._state);
           this._emit('*', 'import');
           resolve();
         } catch (err) {
@@ -227,6 +237,10 @@ class StateStore {
   reset() {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(DEFAULTS_MIGRATION_KEY);
+    this.clearPrivate();
+  }
+
+  clearPrivate() {
     this._state = clone(DEFAULT_CONFIG);
     this._emit('*', 'reset');
   }

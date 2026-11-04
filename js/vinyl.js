@@ -6,6 +6,7 @@
 
 import store from './state.js';
 import { getAudio } from './media-store.js';
+import { safeMediaUrl } from './media-url.js';
 
 // ── DOM REFS ──
 const discWrapper = document.getElementById('vinyl-disc-wrapper');
@@ -73,10 +74,11 @@ const fmtTime = (s) => {
 };
 
 function resolveSrc(src) {
-  if (!src) return '';
-  if (src.startsWith('data:') || src.startsWith('blob:') || src.startsWith('http')) return src;
-  const bust = 'v=playlist2';
-  return src.includes('?') ? `${src}&${bust}` : `${src}?${bust}`;
+  const safeSrc = safeMediaUrl(src, 'audio');
+  if (!safeSrc || safeSrc.startsWith('data:') || safeSrc.startsWith('blob:')) return safeSrc;
+  const url = new URL(safeSrc, window.location.href);
+  url.searchParams.set('v', 'playlist2');
+  return url.href;
 }
 
 function updateNowPlaying(track) {
@@ -102,24 +104,51 @@ function updateNowPlaying(track) {
 function renderPlaylist() {
   if (!playlistEl) return;
   playlistEl.innerHTML = '';
+  if (!playlist.length) {
+    if (trackTitleEl) trackTitleEl.textContent = 'Chưa có bài hát';
+    if (trackArtistEl) trackArtistEl.textContent = 'Thêm nhạc trong Cài đặt';
+    const empty = document.createElement('li');
+    empty.className = 'playlist-empty';
+    empty.textContent = 'Danh sách phát đang trống';
+    playlistEl.appendChild(empty);
+    return;
+  }
+
   playlist.forEach((track, i) => {
     const li = document.createElement('li');
     li.className = `playlist-item${i === currentIdx ? ' active' : ''}`;
     li.dataset.index = String(i);
     li.setAttribute('role', 'button');
     li.tabIndex = 0;
-    li.innerHTML = `
-      <span class="playlist-item-num">${i + 1}</span>
-      <div class="playlist-item-info">
-        <div class="playlist-item-name">${track.title}</div>
-        <div class="playlist-item-artist">${track.artist || ''}</div>
-      </div>
-      ${i === currentIdx && isPlaying ? `<div class="playing-bars">
-        <div class="playing-bar"></div>
-        <div class="playing-bar"></div>
-        <div class="playing-bar"></div>
-      </div>` : `<span class="playlist-item-dur">${track.duration || ''}</span>`}
-    `;
+    const number = document.createElement('span');
+    number.className = 'playlist-item-num';
+    number.textContent = String(i + 1);
+    const info = document.createElement('div');
+    info.className = 'playlist-item-info';
+    const title = document.createElement('div');
+    title.className = 'playlist-item-name';
+    title.textContent = track.title || '';
+    const artist = document.createElement('div');
+    artist.className = 'playlist-item-artist';
+    artist.textContent = track.artist || '';
+    info.append(title, artist);
+    li.append(number, info);
+
+    if (i === currentIdx && isPlaying) {
+      const bars = document.createElement('div');
+      bars.className = 'playing-bars';
+      for (let bar = 0; bar < 3; bar += 1) {
+        const item = document.createElement('div');
+        item.className = 'playing-bar';
+        bars.appendChild(item);
+      }
+      li.appendChild(bars);
+    } else {
+      const duration = document.createElement('span');
+      duration.className = 'playlist-item-dur';
+      duration.textContent = track.duration || '';
+      li.appendChild(duration);
+    }
     playlistEl.appendChild(li);
   });
 }
@@ -164,7 +193,10 @@ function bindPlaylistClicks() {
 // ── LOAD TRACK ──
 export function loadTrack(idx, autoplay = false) {
   playlist = store.get('playlist') || [];
-  if (!playlist.length) return;
+  if (!playlist.length) {
+    renderPlaylist();
+    return;
+  }
 
   const gen = ++loadGen;
   currentIdx = ((idx % playlist.length) + playlist.length) % playlist.length;
@@ -278,6 +310,10 @@ function bindAudioEvents() {
     if (!audio.duration) return;
     const pct = (audio.currentTime / audio.duration) * 100;
     if (progressFill) progressFill.style.width = `${pct}%`;
+    if (progressTrack) {
+      progressTrack.setAttribute('aria-valuenow', String(Math.round(pct)));
+      progressTrack.setAttribute('aria-valuetext', `${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`);
+    }
     if (timeCurrentEl) timeCurrentEl.textContent = fmtTime(audio.currentTime);
   });
 
@@ -318,7 +354,19 @@ function bindSeek() {
     if (!audio || !audio.duration) return;
     const rect = progressTrack.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
-    audio.currentTime = pct * audio.duration;
+    audio.currentTime = Math.min(1, Math.max(0, pct)) * audio.duration;
+  });
+  progressTrack.addEventListener('keydown', (e) => {
+    if (!audio || !audio.duration) return;
+    const currentPct = (audio.currentTime / audio.duration) * 100;
+    let nextPct = currentPct;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') nextPct -= 5;
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') nextPct += 5;
+    else if (e.key === 'Home') nextPct = 0;
+    else if (e.key === 'End') nextPct = 100;
+    else return;
+    e.preventDefault();
+    audio.currentTime = Math.min(100, Math.max(0, nextPct)) * audio.duration / 100;
   });
 }
 
@@ -336,11 +384,13 @@ function updateVinylLabel() {
   if (!vinylLabel) return;
   const avatarA = store.get('avatarA');
   const avatarB = store.get('avatarB');
-  if (avatarA) {
-    vinylLabel.innerHTML = `<img src="${avatarA}" alt="Ảnh đôi" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  } else if (avatarB) {
-    vinylLabel.innerHTML = `<img src="${avatarB}" alt="Ảnh đôi" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  }
+  const src = safeMediaUrl(avatarA || avatarB, 'image');
+  if (!src) return;
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = 'Ảnh đôi';
+  Object.assign(img.style, { width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' });
+  vinylLabel.replaceChildren(img);
 }
 
 // ── MINI PLAYER SETUP ──
@@ -372,6 +422,7 @@ function initMiniPlayer() {
 // ── INIT ──
 export function initVinyl() {
   playlist = store.get('playlist') || [];
+  renderPlaylist();
 
   if (btnPlay) btnPlay.addEventListener('click', togglePlay);
   if (btnPrev) btnPrev.addEventListener('click', () => loadTrack(currentIdx - 1, isPlaying));

@@ -1,6 +1,6 @@
 /**
  * SETTINGS MODULE
- * PIN lock, Settings drawer UI, form bindings, photo upload with canvas compression,
+ * Settings drawer UI, form bindings, photo upload with canvas compression,
  * timeline editor, playlist manager, export/import.
  */
 
@@ -8,22 +8,22 @@ import store from './state.js';
 import { setEffect } from './sky-canvas.js';
 import { showToast } from './app.js';
 import { putAudio, deleteAudio, clearAudio } from './media-store.js';
+import { safeMediaUrl } from './media-url.js';
+
+const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_AUDIO_TYPES = new Set(['audio/mpeg', 'audio/mp4', 'audio/wav']);
 
 // ── DOM REFS ──
 const overlay = document.getElementById('settings-overlay');
 const drawer = document.getElementById('settings-drawer');
 const btnOpenSettings = document.querySelectorAll('.btn-settings');
 const btnClose = document.getElementById('drawer-close');
-const pinLock = document.getElementById('pin-lock');
-const pinDots = document.querySelectorAll('.pin-dot');
-const pinKeys = document.querySelectorAll('.pin-key');
-const pinError = document.getElementById('pin-error');
 
 // Settings form fields
 const inpNameA = document.getElementById('inp-name-a');
 const inpNameB = document.getElementById('inp-name-b');
 const inpStartDate = document.getElementById('inp-start-date');
-const inpPin = document.getElementById('inp-pin');
 const avatarPickerA = document.getElementById('avatar-picker-a');
 const avatarPickerB = document.getElementById('avatar-picker-b');
 const avatarInputA = document.getElementById('avatar-input-a');
@@ -37,9 +37,6 @@ const btnImport = document.getElementById('btn-import');
 const importInput = document.getElementById('import-input');
 const btnSave = document.getElementById('btn-save-settings');
 const btnReset = document.getElementById('btn-reset');
-
-// ── PIN STATE ──
-let pinBuffer = '';
 
 // ── TABS ──
 function activateTab(tabId) {
@@ -73,10 +70,7 @@ function openDrawer() {
   if (drawer) drawer.classList.add('open');
   document.body.style.overflow = 'hidden';
 
-  // Show PIN lock
-  pinBuffer = '';
-  if (pinLock) pinLock.classList.remove('hidden');
-  updatePinDots();
+  populateForm();
   closeTimelineForm();
 }
 
@@ -86,62 +80,11 @@ function closeDrawer() {
   document.body.style.overflow = '';
 }
 
-// ── PIN LOGIC ──
-function updatePinDots() {
-  pinDots.forEach((dot, i) => {
-    dot.classList.toggle('filled', i < pinBuffer.length);
-  });
-}
-
-function checkPin() {
-  const correctPin = store.get('pin') || '0214';
-  if (pinBuffer === correctPin) {
-    // Correct
-    if (pinLock) pinLock.classList.add('hidden');
-    populateForm();
-  } else {
-    // Wrong
-    if (pinError) {
-      pinError.textContent = 'Mã PIN không đúng, thử lại nhé';
-      pinError.style.animation = 'none';
-      void pinError.offsetWidth;
-      pinError.style.animation = '';
-    }
-    pinBuffer = '';
-    updatePinDots();
-    // Shake the dots
-    if (pinDots[0]?.parentElement) {
-      const el = pinDots[0].parentElement;
-      el.style.animation = 'pinShake 0.4s ease';
-      el.addEventListener('animationend', () => el.style.animation = '', { once: true });
-    }
-  }
-}
-
-function bindPinKeys() {
-  pinKeys.forEach(key => {
-    key.addEventListener('click', () => {
-      const val = key.dataset.key;
-      if (val === 'del') {
-        pinBuffer = pinBuffer.slice(0, -1);
-        if (pinError) pinError.textContent = '';
-      } else if (pinBuffer.length < 4) {
-        pinBuffer += val;
-      }
-      updatePinDots();
-      if (pinBuffer.length === 4) {
-        setTimeout(checkPin, 120);
-      }
-    });
-  });
-}
-
 // ── POPULATE FORM ──
 function populateForm() {
   if (inpNameA) inpNameA.value = store.get('nameA') || '';
   if (inpNameB) inpNameB.value = store.get('nameB') || '';
   if (inpStartDate) inpStartDate.value = store.get('startDate') || '';
-  if (inpPin) inpPin.value = store.get('pin') || '';
 
   // Theme picker
   const currentTheme = store.get('theme') || 'deep-blue';
@@ -166,8 +109,20 @@ function populateForm() {
   const avB = store.get('avatarB');
   const previewA = document.getElementById('avatar-preview-a');
   const previewB = document.getElementById('avatar-preview-b');
-  if (previewA && avA) previewA.innerHTML = `<img src="${avA}" alt="Avatar A">`;
-  if (previewB && avB) previewB.innerHTML = `<img src="${avB}" alt="Avatar B">`;
+  const safeAvatarA = safeMediaUrl(avA, 'image');
+  const safeAvatarB = safeMediaUrl(avB, 'image');
+  if (previewA && safeAvatarA) {
+    const img = document.createElement('img');
+    img.src = safeAvatarA;
+    img.alt = 'Avatar A';
+    previewA.replaceChildren(img);
+  }
+  if (previewB && safeAvatarB) {
+    const img = document.createElement('img');
+    img.src = safeAvatarB;
+    img.alt = 'Avatar B';
+    previewB.replaceChildren(img);
+  }
 }
 
 // ── SAVE ──
@@ -176,7 +131,6 @@ function saveAll() {
   if (inpNameA) updates.nameA = inpNameA.value.trim();
   if (inpNameB) updates.nameB = inpNameB.value.trim();
   if (inpStartDate?.value) updates.startDate = inpStartDate.value;
-  if (inpPin?.value.length === 4) updates.pin = inpPin.value;
 
   const ok = store.patch(updates);
   if (ok) {
@@ -190,6 +144,10 @@ function saveAll() {
 // ── IMAGE COMPRESSION ──
 function compressImage(file, maxW = 800) {
   return new Promise((resolve, reject) => {
+    if (!ALLOWED_IMAGE_TYPES.has(file.type) || file.size > MAX_IMAGE_BYTES) {
+      reject(new Error('Unsupported image type or file too large'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -220,7 +178,12 @@ function bindAvatarUpload(inputEl, storageKey, previewId) {
       const b64 = await compressImage(file, 300);
       store.set(storageKey, b64);
       const preview = document.getElementById(previewId);
-      if (preview) preview.innerHTML = `<img src="${b64}" alt="Avatar">`;
+      if (preview) {
+        const img = document.createElement('img');
+        img.src = b64;
+        img.alt = 'Avatar';
+        preview.replaceChildren(img);
+      }
       showToast('Đã cập nhật ảnh đại diện', 'success');
     } catch {
       showToast('Không thể đọc ảnh', 'error');
@@ -247,7 +210,7 @@ function bindPhotoUpload() {
   photoUploadZone.addEventListener('drop', async (e) => {
     e.preventDefault();
     photoUploadZone.style.borderColor = '';
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    const files = Array.from(e.dataTransfer.files).filter(f => ALLOWED_IMAGE_TYPES.has(f.type));
     for (const file of files) await uploadPhoto(file);
   });
 
@@ -295,25 +258,33 @@ function renderSettingsPlaylist() {
   const playlist = store.get('playlist') || [];
   list.innerHTML = '';
   if (!playlist.length) {
-    list.innerHTML = `<li style="font-size:12px;color:var(--color-text-muted);padding:8px;text-align:center;">Chưa có bài hát nào</li>`;
+    const empty = document.createElement('li');
+    empty.className = 'settings-playlist-empty';
+    empty.textContent = 'Chưa có bài hát nào';
+    list.appendChild(empty);
     return;
   }
   playlist.forEach((track, idx) => {
     const li = document.createElement('li');
     li.className = 'settings-playlist-item';
-    li.innerHTML = `
-      <div class="song-info">
-        <span class="song-title">${idx + 1}. ${track.title}</span>
-        <span class="song-artist">${track.artist || ''}</span>
-      </div>
-      <button class="btn-remove-song" data-id="${track.id}" title="Xóa bài hát" aria-label="Xóa bài hát">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    `;
-    li.querySelector('.btn-remove-song').addEventListener('click', async () => {
+    const info = document.createElement('div');
+    info.className = 'song-info';
+    const title = document.createElement('span');
+    title.className = 'song-title';
+    title.textContent = `${idx + 1}. ${track.title || ''}`;
+    const artist = document.createElement('span');
+    artist.className = 'song-artist';
+    artist.textContent = track.artist || '';
+    info.append(title, artist);
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'btn-remove-song';
+    removeButton.title = 'Xóa bài hát';
+    removeButton.setAttribute('aria-label', 'Xóa bài hát');
+    removeButton.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+    li.append(info, removeButton);
+    removeButton.addEventListener('click', async () => {
       store.removeTrack(track.id);
       if (track.source === 'local') {
         try { await deleteAudio(track.id); } catch (e) { console.warn('[Settings] deleteAudio failed', e); }
@@ -337,6 +308,10 @@ function bindMusicManager() {
       const file = e.target.files[0];
       musicUploadInput.value = '';
       if (!file) return;
+      if (!ALLOWED_AUDIO_TYPES.has(file.type)) {
+        showToast('Định dạng nhạc không được hỗ trợ', 'error');
+        return;
+      }
       if (file.size > MAX_TRACK_BYTES) {
         showToast('File quá lớn (tối đa 30MB)', 'error');
         return;
@@ -583,9 +558,6 @@ export function initSettings() {
       }
     });
   }
-
-  // PIN
-  bindPinKeys();
 
   // Avatar upload
   bindAvatarUpload(avatarInputA, 'avatarA', 'avatar-preview-a');

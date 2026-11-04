@@ -23,7 +23,7 @@
 .polaroid {
   display: flex;
   flex-direction: column;
-  background: #FDFCFA;
+  background: var(--cloud-50);
   padding: var(--space-3) var(--space-3) var(--space-5);
   border-radius: 4px;
   box-shadow:
@@ -143,21 +143,58 @@
 
 /* Caption area */
 .polaroid-caption {
+  min-height: 52px;
+  margin-top: var(--space-3);
   padding-top: var(--space-3);
-  text-align: center;
-  min-height: 44px;
+  border-top: 1px solid var(--color-border-subtle);
+  text-align: left;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .polaroid-caption-text {
-  font-family: 'Be Vietnam Pro', cursive;
+  font-family: var(--font-body);
   font-size: var(--text-sm);
-  font-style: italic;
-  color: var(--ink-500);
-  line-height: 1.4;
-  letter-spacing: 0.01em;
+  font-weight: 600;
+  color: var(--ink-700);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.gallery-empty-state {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+}
+
+.gallery-empty-state svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: var(--space-1);
+  color: var(--sky-300);
+}
+
+.gallery-empty-title,
+.gallery-empty-text {
+  margin: 0;
+}
+
+.gallery-empty-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.gallery-empty-text {
+  max-width: 38ch;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.6;
 }
 
 /* Upload add button */
@@ -242,7 +279,7 @@
 }
 
 .lightbox-photo {
-  background: #FDFCFA;
+  background: var(--cloud-50);
   padding: var(--space-4) var(--space-4) var(--space-8);
   border-radius: 4px;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);

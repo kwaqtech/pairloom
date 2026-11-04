@@ -9,7 +9,7 @@
 | high | Playlist MP3s were duplicate files; four copies were Ed Sheeran “Perfect” ID3 | file hashes + ID3 in `assets/music/` | Wrong song title in OS/media UI; clicking list did not change audio | Replace with unique files; Media Session title from playlist; no auto-skip on error |
 | high | Settings save failed when localStorage quota exceeded | `js/state.js` original `saveState` returned false; `js/settings.js` toast | Names/date not persisted | Slim save without `data:` audio; always patch names |
 | med | `new Date('YYYY-MM-DD')` is UTC | previous `js/counter.js` | Off-by-one day vs Vietnam calendar | `parseLocalDate` |
-| med | PIN is client-side only | `js/settings.js`, `js/config.js` | Anyone can read storage | Treat as UX lock, not security |
+| high | App still persists user data in browser only | `js/state.js`, `js/media-store.js` | Data is not shared or protected by server authorization | Complete Supabase Auth/RLS integration before public app deployment |
 | low | No tests / CI | scan | Regressions only caught manually | [ASK USER] whether tests are desired |
 
 ### 2) Technical Debt
@@ -25,9 +25,8 @@
 
 | Risk | OWASP category (if applicable) | Evidence | Current mitigation | Gap |
 |------|--------------------------------|----------|--------------------|-----|
-| Client-only PIN | A07 Identification | `js/settings.js` `store.get('pin')` | Hides drawer | Not authentication |
-| innerHTML of titles/captions | A03 Injection | `js/vinyl.js`, `js/gallery.js` | local-only site | No sanitization |
-| Default PIN in source | N/A | `js/config.js` `pin: '0214'` | Hint in UI | Public default |
+| Shared user text rendered in HTML | A03 Injection | `js/counter.js`, `js/settings.js`, `js/vinyl.js`, `js/timeline.js` | Dynamic text now uses text nodes; remaining HTML strings are static icons | Validate imported records and media sources before remote sync |
+| Local-only state | A01 Broken Access Control | `js/state.js`, `js/media-store.js` | No server authorization yet | Do not deploy as a private multi-pair app until RLS and Auth are connected |
 
 ### 4) Performance and Scaling Concerns
 
@@ -47,12 +46,9 @@
 
 Scan: "No commits found" / "HIGH-CHURN FILES: None found".
 
-### 6) `[ASK USER]` Questions
+### 6) Decisions
 
-1. [ASK USER] Playlist files were placeholders (duplicate Perfect / SoundHelix). Should the on-site titles stay Vietnamese song names while audio is royalty-free instrumentals, or will you drop in the real licensed MP3s later?
-2. [ASK USER] Special-days list currently: Năm mới, Valentine, Quốc tế Phụ nữ, White Day, Quốc tế Thiếu nhi, Phụ nữ Việt Nam, Quốc tế Đàn ông, Giáng sinh. Add/remove any?
-3. [ASK USER] Default PIN remains `0214` in config. Change it to `0805` (08/05 start date)?
-4. [ASK USER] Is this site only opened locally, or will it be hosted publicly (affects PIN/XSS priority)?
+Private multi-pair decisions and implementation slices are recorded in `docs/PRIVATE_SPACES_MIGRATION.md`.
 
 ### 7) Evidence
 

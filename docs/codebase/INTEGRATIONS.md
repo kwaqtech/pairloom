@@ -7,23 +7,26 @@
 | System | Type (API/DB/Queue/etc) | Purpose | Auth model | Criticality | Evidence |
 |--------|---------------------------|---------|------------|-------------|----------|
 | Google Fonts | CSS/font CDN | Load Outfit / Be Vietnam Pro (requested in `fontGate`) | none | low | `index.html` preconnect; `js/app.js` `document.fonts.load` |
-| Browser localStorage | Web storage | Persist couple settings, playlist, photos | origin-scoped | high | `js/state.js` |
+| Supabase Auth | OAuth API | Google sign-in, invite/account session | PKCE; sessionStorage | high | `js/auth.js`, `js/supabase-client.js` |
+| Supabase Postgres/Storage | Data API + object storage | Pair schema, RLS, private media | Publishable key + user JWT; RLS | high | `supabase/migrations/0001_private_pairs.sql` |
+| Browser localStorage | Web storage | Legacy couple data awaiting import path | origin-scoped | high | `js/state.js` |
 | HTMLAudioElement | Browser media | Play `assets/music/*.mp3` or user URLs | none | high | `js/vinyl.js` |
 | Media Session API | Browser media overlay | Override OS now-playing title/artist | none | med | `js/vinyl.js` `navigator.mediaSession` |
 
-No `fetch(` / `axios` / WebSocket usage in `js/` (grep). User-supplied MP3 URLs in settings would be third-party HTTP if entered (`js/settings.js` prompt for URL).
+Cloud data and media sync are not connected yet. User-supplied MP3 URLs in settings may point to third-party HTTP (`js/settings.js`).
 
 ### 2) Data Stores
 
 | Store | Role | Access layer | Key risk | Evidence |
 |-------|------|--------------|----------|----------|
-| localStorage `celestial_romance_v1` | Source of truth after first load | `js/state.js` | Quota; JSON parse failure falls back to defaults | `loadState` / `saveState` |
+| localStorage `celestial_romance_v1` | Existing data source pending migration | `js/state.js` | Must not be shown to another signed-in account | `loadState` / `saveState` |
+| Supabase Postgres + private Storage | Planned shared source of truth | RLS and bucket policies in migration | Migration must be applied and verified before public launch | `supabase/migrations/0001_private_pairs.sql` |
 
 ### 3) Secrets and Credentials Handling
 
-- Credential sources: PIN in `DEFAULT_CONFIG.pin` and stored state (`js/config.js`, `js/settings.js`)
-- Hardcoding checks: default PIN `'0214'` is in source
-- Rotation or lifecycle notes: user can set 4-digit PIN in settings; not hashed
+- Credential sources: URL and publishable key live in ignored `.env.local`; service-role keys and Google OAuth client secrets stay in provider-managed secrets and never enter frontend files.
+- Hardcoding checks: frontend source reads only Vite-prefixed Supabase variables.
+- Rotation or lifecycle notes: enable Google OAuth only after Supabase Auth and RLS migrations are deployed to a staging project.
 
 ### 4) Reliability and Failure Behavior
 

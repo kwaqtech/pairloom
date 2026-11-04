@@ -49,13 +49,6 @@ function tagTextColor(tag) {
   return map[tag] || 'var(--sky-600)';
 }
 
-// ── ESCAPE ──
-function esc(str) {
-  return String(str ?? '').replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
-}
-
 // ── RENDER ──
 function renderTimeline() {
   if (!timelineWrap) return;
@@ -70,39 +63,69 @@ function renderTimeline() {
     const dateStr = fmtDate(event.date);
     const isOdd = i % 2 === 0;
 
-    const cardHTML = `
-      <div class="timeline-card glass-card">
-        <span class="timeline-date">${esc(dateStr)}</span>
-        <h3 class="timeline-event-title">${esc(event.title)}</h3>
-        <p class="timeline-desc">${esc(event.description)}</p>
-        ${event.tag ? `<span class="timeline-tag" style="background:${tagColor(event.tag)};color:${tagTextColor(event.tag)}">${esc(event.tag)}</span>` : ''}
-      </div>
-    `;
+    const card = document.createElement('div');
+    card.className = 'timeline-card glass-card';
+    const date = document.createElement('span');
+    date.className = 'timeline-date';
+    date.textContent = dateStr;
+    const title = document.createElement('h3');
+    title.className = 'timeline-event-title';
+    title.textContent = event.title || '';
+    const description = document.createElement('p');
+    description.className = 'timeline-desc';
+    description.textContent = event.description || '';
+    card.append(date, title, description);
 
-    const nodeHTML = `
-      <div class="timeline-node">
-        <div class="node-circle">${icon}</div>
-      </div>
-    `;
-
-    const emptyHTML = `<div class="timeline-empty"></div>`;
-
-    if (isOdd) {
-      item.innerHTML = cardHTML + nodeHTML + emptyHTML;
-    } else {
-      item.innerHTML = emptyHTML + nodeHTML + cardHTML;
+    if (event.tag) {
+      const tag = document.createElement('span');
+      tag.className = 'timeline-tag';
+      tag.textContent = event.tag;
+      tag.style.background = tagColor(event.tag);
+      tag.style.color = tagTextColor(event.tag);
+      card.appendChild(tag);
     }
+
+    const node = document.createElement('div');
+    node.className = 'timeline-node';
+    const circle = document.createElement('div');
+    circle.className = 'node-circle';
+    circle.innerHTML = icon;
+    node.appendChild(circle);
+    const spacer = document.createElement('div');
+    spacer.className = 'timeline-empty';
+
+    if (isOdd) item.append(card, node, spacer);
+    else item.append(spacer, node, card);
 
     timelineWrap.appendChild(item);
   });
 
   // Empty state
   if (timeline.length === 0) {
-    timelineWrap.innerHTML = `
-      <p style="text-align:center;color:var(--color-text-light);padding:var(--space-10) 0;font-size:var(--text-sm);">
-        Chưa có mốc kỷ niệm — hãy thêm vào trong bảng Cài đặt
-      </p>
-    `;
+    timelineWrap.dataset.empty = 'true';
+    const empty = document.createElement('div');
+    empty.className = 'timeline-empty-state';
+    const heart = document.createElement('div');
+    heart.className = 'timeline-empty-icon';
+    heart.innerHTML = ICONS.heart;
+    const message = document.createElement('p');
+    message.className = 'timeline-empty-text';
+    message.textContent = 'Chưa có mốc kỷ niệm — hãy thêm vào trong bảng Cài đặt';
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost';
+    btn.type = 'button';
+    btn.textContent = 'Mở Cài đặt';
+    empty.append(heart, message, btn);
+    timelineWrap.replaceChildren(empty);
+    btn.addEventListener('click', () => {
+      const overlay = document.getElementById('settings-overlay');
+      const drawer = document.getElementById('settings-drawer');
+      if (overlay) overlay.classList.add('open');
+      if (drawer) drawer.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  } else {
+    delete timelineWrap.dataset.empty;
   }
 
   // Trigger intersection observer for new elements

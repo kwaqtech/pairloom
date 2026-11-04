@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="css/components/timeline.css">
   <link rel="stylesheet" href="css/components/gallery.css">
   <link rel="stylesheet" href="css/components/settings.css">
+  <link rel="stylesheet" href="css/components/auth.css">
 
   <!-- Inline critical CSS: prevents CLS before stylesheets load -->
   <style>
@@ -43,7 +44,117 @@
   </style>
 </head>
 
-<body>
+<body class="auth-pending">
+
+  <main id="auth-gate" class="auth-gate" aria-labelledby="auth-title">
+
+    <!-- ── SKELETON: shown during session check (body.auth-checking) ── -->
+    <div class="auth-skeleton" aria-hidden="true">
+      <div class="auth-skeleton-line auth-skeleton-line--short"></div>
+      <div class="auth-skeleton-line auth-skeleton-line--long"></div>
+      <div class="auth-skeleton-line auth-skeleton-line--med"></div>
+      <div class="auth-skeleton-btn"></div>
+    </div>
+
+    <!-- ── REAL PANEL ── -->
+    <section class="auth-panel" aria-labelledby="auth-title">
+
+      <!-- Header (always visible once panel shows) -->
+      <div class="auth-header">
+        <p class="auth-eyebrow">CHÚNG MÌNH</p>
+        <h1 id="auth-title" class="auth-title">Không gian riêng của hai bạn</h1>
+      </div>
+
+      <!-- Status line (aria-live) -->
+      <p id="auth-status" class="auth-status" role="status" aria-live="polite">Đang kiểm tra phiên đăng nhập…</p>
+
+      <!-- Setup required notice -->
+      <div id="auth-setup-required" class="auth-note auth-setup-note" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>Thiếu cấu hình Supabase. Đặt <code>VITE_SUPABASE_URL</code> và <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> trong môi trường chạy.</span>
+      </div>
+
+      <!-- STATE 2: Signed out -->
+      <div id="auth-signed-out" class="auth-actions" hidden>
+        <p class="auth-signed-out-desc">Một khoảng riêng tư để hai bạn lưu giữ những khoảnh khắc đặc biệt.</p>
+        <button id="auth-google-sign-in" class="btn auth-google-btn" type="button">
+          <svg class="auth-google-logo" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
+            <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
+          </svg>
+          Đăng nhập bằng Google
+        </button>
+        <p id="auth-invite-note" class="auth-invite-note-banner" hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Link mời đã được nhận. Hãy đăng nhập đúng tài khoản Google được mời.
+        </p>
+      </div>
+
+      <!-- STATE 3 + 4: Signed in (no membership / invite pending) -->
+      <div id="auth-signed-in" class="auth-account" hidden>
+        <div class="auth-user-row">
+          <span class="auth-user-dot" aria-hidden="true"></span>
+          <p id="auth-account-email" class="auth-account-email"></p>
+        </div>
+
+        <!-- STATE 3: No membership — create invite -->
+        <form id="auth-create-invite" class="auth-invite-form" hidden>
+          <p class="auth-invite-guide">
+            Nhập email Google của người ấy để tạo link mời một lần. Sau khi họ chấp nhận, không gian riêng sẽ được mở.
+          </p>
+          <label for="auth-recipient-email">Email Google của người được mời</label>
+          <input id="auth-recipient-email" name="email" type="email" autocomplete="email"
+            placeholder="example@gmail.com" maxlength="320" required>
+          <button id="auth-create-invite-button" class="btn btn-primary auth-primary" type="submit">Tạo link mời</button>
+        </form>
+
+        <!-- STATE 4: Invite created — waiting -->
+        <div id="auth-invite-result" class="auth-invite-result" hidden>
+          <div class="auth-waiting-header">
+            <span class="auth-pulse-dot" aria-hidden="true"></span>
+            <span class="auth-waiting-label">Đang chờ người ấy tham gia…</span>
+          </div>
+          <label for="auth-invite-url">Link mời · dùng một lần · hết hạn sau 7 ngày</label>
+          <div class="auth-copy-row">
+            <input id="auth-invite-url" type="url" readonly>
+            <button id="auth-copy-invite" class="btn auth-copy-btn" type="button">
+              <svg class="auth-copy-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <svg class="auth-check-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span class="auth-copy-label">Sao chép</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STATE 5: Paired success (brief flash before gate closes) -->
+        <div id="auth-paired" class="auth-paired-notice" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          Quyền thành viên đã xác nhận. Đang chuẩn bị giao diện…
+        </div>
+
+        <button id="auth-sign-out" class="btn btn-ghost auth-sign-out-btn" type="button">Đăng xuất</button>
+      </div>
+
+      <!-- Error display (STATE 6) -->
+      <p id="auth-error" class="auth-error" role="alert" hidden></p>
+    </section>
+  </main>
 
   <!-- ════════════════════════════════════════════
      BACKGROUND LAYERS
@@ -66,8 +177,8 @@
           <circle cx="23.5" cy="21" r="2.5" fill="rgba(245, 216, 231, 0.8)" />
         </svg>
       </div>
-      <h1 class="welcome-title gate-text">Cin Ckào Cún Yêu Của Anh</h1>
-      <p class="welcome-subtitle gate-text">Một trang web nhỏ để nịnh vợ đừng mắng nữa~</p>
+      <h1 class="welcome-title gate-text">Chào mừng đến với câu chuyện của hai bạn</h1>
+      <p class="welcome-subtitle gate-text">Một khoảng riêng để lưu giữ những điều đáng nhớ.</p>
       <span class="welcome-hint">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -150,7 +261,7 @@
                 <div class="counter-name-tag">
                   <div class="avatar" id="avatar-a" aria-label="Avatar A"
                     style="background:linear-gradient(135deg,var(--sky-300),var(--rose-300));">A</div>
-                  <span id="counter-name-a">Kwaq</span>
+                  <span id="counter-name-a">Bạn A</span>
                 </div>
                 <span class="counter-sep-heart" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -161,7 +272,7 @@
                 <div class="counter-name-tag">
                   <div class="avatar" id="avatar-b" aria-label="Avatar B"
                     style="background:linear-gradient(135deg,var(--rose-300),var(--sky-300));">B</div>
-                  <span id="counter-name-b">Cún</span>
+                  <span id="counter-name-b">Bạn B</span>
                 </div>
               </div>
 
@@ -314,8 +425,8 @@
 
               <!-- Progress bar -->
               <div class="track-progress">
-                <div class="progress-track" id="progress-track" role="progressbar" aria-label="Tiến độ bài hát"
-                  aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-track" id="progress-track" role="slider" aria-label="Tiến độ bài hát"
+                  aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" tabindex="0">
                   <div class="progress-fill" id="progress-fill"></div>
                 </div>
                 <div class="progress-times">
@@ -442,7 +553,8 @@
   <!-- ════════════════════════════════════════
      LIGHTBOX
 ════════════════════════════════════════ -->
-  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh phóng to">
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh phóng to"
+    aria-hidden="true" inert>
     <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
     <button class="lightbox-close" id="lightbox-close" aria-label="Đóng ảnh">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -465,46 +577,6 @@
   <div id="settings-overlay" class="settings-overlay" aria-hidden="true"></div>
 
   <aside id="settings-drawer" class="settings-drawer" role="dialog" aria-modal="true" aria-label="Cài đặt trang web">
-
-    <!-- PIN Lock Screen -->
-    <div id="pin-lock" class="pin-lock" role="dialog" aria-label="Nhập mã PIN">
-      <div class="pin-lock-icon" aria-hidden="true">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-          stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-      </div>
-      <h2 class="pin-lock-title">Nhập mã PIN</h2>
-      <p class="pin-lock-hint">Mã mặc định: ngày bắt đầu yêu (DDMM)</p>
-      <div class="pin-dots" role="group" aria-label="Mã PIN đã nhập">
-        <div class="pin-dot" aria-hidden="true"></div>
-        <div class="pin-dot" aria-hidden="true"></div>
-        <div class="pin-dot" aria-hidden="true"></div>
-        <div class="pin-dot" aria-hidden="true"></div>
-      </div>
-      <p class="pin-error" id="pin-error" role="alert" aria-live="polite"></p>
-      <div class="pin-pad" role="group" aria-label="Bàn phím số">
-        <button class="pin-key" data-key="1" aria-label="1">1</button>
-        <button class="pin-key" data-key="2" aria-label="2">2</button>
-        <button class="pin-key" data-key="3" aria-label="3">3</button>
-        <button class="pin-key" data-key="4" aria-label="4">4</button>
-        <button class="pin-key" data-key="5" aria-label="5">5</button>
-        <button class="pin-key" data-key="6" aria-label="6">6</button>
-        <button class="pin-key" data-key="7" aria-label="7">7</button>
-        <button class="pin-key" data-key="8" aria-label="8">8</button>
-        <button class="pin-key" data-key="9" aria-label="9">9</button>
-        <button class="pin-key" data-key="0" aria-label="0" style="grid-column:2">0</button>
-        <button class="pin-key pin-key-del" data-key="del" aria-label="Xóa">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
-            <line x1="18" y1="9" x2="12" y2="15" />
-            <line x1="12" y1="9" x2="18" y2="15" />
-          </svg>
-        </button>
-      </div>
-    </div>
 
     <!-- Drawer Header -->
     <div class="drawer-header">
@@ -757,15 +829,6 @@
 
       <div class="settings-panel" id="panel-he-thong" role="tabpanel" hidden>
 
-        <!-- Section: Bảo mật -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">Mã PIN bảo vệ</h3>
-          <div class="field">
-            <label for="inp-pin">Mã PIN mới (4 chữ số)</label>
-            <input type="text" id="inp-pin" placeholder="0214" maxlength="4" pattern="[0-9]{4}" inputmode="numeric">
-          </div>
-        </div>
-
         <!-- Section: Sao lưu -->
         <div class="settings-section">
           <h3 class="settings-section-title">Sao lưu dữ liệu</h3>
@@ -790,6 +853,16 @@
             </button>
             <input type="file" id="import-input" accept=".json" style="display:none" aria-hidden="true">
           </div>
+        </div>
+
+        <div class="settings-section" id="settings-account-section">
+          <h3 class="settings-section-title">Tài khoản</h3>
+          <p id="settings-account-email" class="auth-account-email"></p>
+          <div class="settings-account-actions">
+            <button class="btn btn-ghost auth-secondary" id="settings-sign-out" type="button">Đăng xuất</button>
+            <button class="btn btn-ghost auth-end" id="auth-end-relationship" type="button" hidden>Kết thúc mối quan hệ</button>
+          </div>
+          <p id="settings-auth-error" class="auth-error" role="alert" hidden></p>
         </div>
       </div><!-- /panel-he-thong -->
 

@@ -6,15 +6,14 @@
 
 const DEFAULT_CONFIG = {
   // ── COUPLE INFO ──
-  nameA: 'Kwaq',
-  nameB: 'Cún',
-  startDate: '2026-05-08',   // Format: YYYY-MM-DD
+  nameA: 'Bạn A',
+  nameB: 'Bạn B',
+  startDate: '',             // Set by the couple after sign-in
   avatarA: '',               // Base64 or URL
   avatarB: '',               // Base64 or URL
 
   // ── SETTINGS ──
   theme: 'deep-blue',        // 'deep-blue' | 'midnight' | 'pastel-sky' | 'sunset'
-  pin: '0214',               // 4-digit PIN (default: ngày 14/02)
   bgEffect: 'hearts',        // 'hearts' | 'clouds' | 'fireflies' | 'petals'
 
   // ── PLAYLIST ──
@@ -22,48 +21,7 @@ const DEFAULT_CONFIG = {
   ],
 
   // ── LOVE TIMELINE ──
-  timeline: [
-    {
-      id: 't1',
-      date: '2024-02-14',
-      title: 'Lần đầu gặp gỡ',
-      description: 'Cái khoảnh khắc mà hai ánh mắt chạm nhau, tim bỗng nhảy loạn cả lên.',
-      icon: 'star',
-      tag: 'Duyên khởi'
-    },
-    {
-      id: 't2',
-      date: '2024-03-08',
-      title: 'Ngày tỏ tình',
-      description: 'Câu nói nhỏ nhoi ấy đã thay đổi tất cả — từ hôm đó, chúng mình là của nhau.',
-      icon: 'heart',
-      tag: 'Kỷ niệm'
-    },
-    {
-      id: 't3',
-      date: '2024-05-20',
-      title: 'Chuyến đi đầu tiên',
-      description: 'Cùng nhau khám phá thế giới lần đầu, tiếng cười vang mãi suốt chuyến đi.',
-      icon: 'map',
-      tag: 'Phiêu lưu'
-    },
-    {
-      id: 't4',
-      date: '2024-08-01',
-      title: '100 ngày bên nhau',
-      description: '100 ngày không nhiều, nhưng đủ để biết rằng mình đã chọn đúng người.',
-      icon: 'cake',
-      tag: 'Mốc son'
-    },
-    {
-      id: 't5',
-      date: '2025-02-14',
-      title: 'Kỷ niệm 1 năm',
-      description: 'Một năm chứa đầy những khoảnh khắc đẹp — mỗi ngày cùng em đều là một trang thơ.',
-      icon: 'gift',
-      tag: 'Mốc son'
-    }
-  ],
+  timeline: [],
 
   // ── PHOTO GALLERY ──
   photos: [

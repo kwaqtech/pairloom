@@ -47,7 +47,7 @@ index.html
 
 - Entire app state (including base64 photos and data-URL audio) in one `localStorage` key can exceed quota (`js/state.js` `QuotaExceededError`).
 - Default config vs stored JSON: first visit writes defaults; later `config.js` edits do not apply unless migration runs (`DEFAULTS_MIGRATION_KEY` in `js/state.js`).
-- No server-side auth: PIN only hides the settings drawer (`js/settings.js`).
+- Private multi-pair architecture is being added; until Supabase Auth and RLS are wired into the app, current localStorage data is not protected for public hosting. See `docs/PRIVATE_SPACES_MIGRATION.md`.
 
 ### 6) Evidence
 
