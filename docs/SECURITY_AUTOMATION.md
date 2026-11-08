@@ -14,14 +14,14 @@
 | IaC/config | Vercel security headers are in `vercel.json`; CodeQL scans source | No Terraform/Kubernetes/Docker configuration exists to scan. |
 | Container/supply chain | CycloneDX SBOM uploaded as workflow artifact | No container image exists. |
 | Security integration tests | `node --test` runs current regression tests | Add isolated Auth/RLS and abuse cases before release. |
-| DAST | ZAP baseline job requires repository variable `STAGING_URL` | Must be HTTPS and point only to an owned, isolated staging deployment. |
+| DAST | ZAP baseline job reads repository variable `STAGING_URL`, falling back to repository secret `STAGING_URL` | Must be HTTPS and point only to an owned, isolated staging deployment. |
 | Manual pentest | Report/retest gate remains manual | Requires approved scope and role-based test accounts. |
 | TLS/headers/readiness | ZAP checks staging response; source headers live in `vercel.json` | Production TLS and rollback need deployment-level confirmation. |
 | Remediation/release gate | `Security release gate` fails when checks, secrets, CodeQL, or configured DAST fail | Require `Security release gate` in branch protection; configure release approval in GitHub. |
 
 ## GitHub setup
 
-1. Add repository variable `STAGING_URL` with the HTTPS URL of the isolated staging deployment; CI fails closed when it is missing or invalid.
+1. Add repository variable `STAGING_URL` with the HTTPS URL of the isolated staging deployment. A repository secret with the same name is also accepted; configure only one. CI fails closed when it is missing or invalid.
 2. Protect the default branch and require `Security release gate` as a status check.
 3. Enable GitHub code scanning alerts. Dependabot weekly updates are defined in `.github/dependabot.yml`.
 4. Keep staging data synthetic. Do not add service-role keys or OAuth client secrets to Actions variables or repository files.
