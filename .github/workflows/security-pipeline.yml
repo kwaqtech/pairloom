@@ -54,14 +54,16 @@ jobs:
         env:
           GITLEAKS_VERSION: 8.30.1
         run: |
-          curl --fail --silent --show-error --location \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
-            --output /tmp/gitleaks.tar.gz
-          curl --fail --silent --show-error --location \
-            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt" \
+          set -euo pipefail
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          release_url="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl --fail --silent --show-error --location --retry 3 \
+            "${release_url}/${archive}" --output "/tmp/${archive}"
+          curl --fail --silent --show-error --location --retry 3 \
+            "${release_url}/gitleaks_${GITLEAKS_VERSION}_checksums.txt" \
             --output /tmp/gitleaks_checksums.txt
-          (cd /tmp && grep "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz$" gitleaks_checksums.txt | sha256sum --check --status)
-          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          (cd /tmp && grep -F "  ${archive}" gitleaks_checksums.txt | sha256sum --check --status)
+          tar -xzf "/tmp/${archive}" -C /tmp gitleaks
           sudo install /tmp/gitleaks /usr/local/bin/gitleaks
       - name: Scan current files
         run: gitleaks dir . --redact --exit-code 1
@@ -91,18 +93,29 @@ jobs:
     steps:
       - name: Require HTTPS staging URL
         env:
-          STAGING_URL: ${{ vars.STAGING_URL }}
+          STAGING_URL: ${{ vars.STAGING_URL || secrets.STAGING_URL }}
         run: |
           node --input-type=module -e '
-            const target = new URL(process.env.STAGING_URL ?? "");
-            if (target.protocol !== "https:" || target.username || target.password) {
-              console.error("STAGING_URL must be an HTTPS URL without embedded credentials");
+            const value = process.env.STAGING_URL?.trim();
+            if (!value) {
+              console.error("Configure STAGING_URL as a repository variable or secret");
+              process.exit(1);
+            }
+            let target;
+            try {
+              target = new URL(value);
+            } catch {
+              console.error("STAGING_URL must be a valid absolute HTTPS URL");
+              process.exit(1);
+            }
+            if (target.protocol !== "https:" || !target.hostname || target.username || target.password) {
+              console.error("STAGING_URL must be a valid HTTPS URL without embedded credentials");
               process.exit(1);
             }
           '
       - uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
         with:
-          target: ${{ vars.STAGING_URL }}
+          target: ${{ vars.STAGING_URL || secrets.STAGING_URL }}
           artifact_name: zap-baseline-report
           fail_action: true
           allow_issue_writing: false
