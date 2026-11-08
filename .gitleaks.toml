@@ -1,0 +1,11 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Persistent localStorage namespace labels, not credentials."
+paths = ['''^js/state\.js$''']
+regexTarget = "secret"
+regexes = [
+  '''^celestial_romance_v1$''',
+  '''^celestial_romance_defaults_v3$''',
+]

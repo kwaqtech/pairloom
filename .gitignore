@@ -1,6 +1,6 @@
 .env
 .env.*
-!.env.example
+.env.local
 supabase/Google/*client_secret*.json
 .vercel/
 node_modules/
